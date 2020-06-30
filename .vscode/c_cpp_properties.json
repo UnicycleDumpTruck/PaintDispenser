@@ -3,12 +3,18 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\**",
-                "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.14\\**"
+                "C:\\Users\\jhighsmith\\AppData\\Local\\Arduino15\\packages\\**",
+                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\jrk-g2"
             ],
+            "forcedInclude": [
+                "C:\\Users\\jhighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.14\\cores\\arduino\\Arduino.h"
+            ],
+<<<<<<< HEAD
             "forcedInclude": [
                 "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.14\\cores\\arduino\\Arduino.h"
             ],
+=======
+>>>>>>> ce32e307f6077d39924b3ac3887e505827533e9f
             "intelliSenseMode": "msvc-x64",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.26.28801/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
