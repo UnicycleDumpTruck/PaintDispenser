@@ -10,6 +10,7 @@ void setup()
 {
   // Set up I2C.
   Wire.begin();
+  Serial.begin(115200);
 }
 
 void loop()
@@ -18,4 +19,5 @@ void loop()
   jrk.setTarget(2048);
   delay(1000);
   jrk.setTarget(1800);
+  Serial.println("loop");
 }
