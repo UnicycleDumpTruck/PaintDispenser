@@ -1,10 +1,37 @@
 // Paint dispenser controlled by Feather M0 Express, has two Sharp IR sensors.
 // Uses Pololu #3146 Jrk G2 18v19 Motor Controller.
+// https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/using-with-arduino-ide
 
 
 #include <JrkG2.h>
 
+#define LEFT_SENSOR_PIN A0
+#define RIGHT_SENSOR_PIN A1
+#define LEFT_SENSOR_THRESHOLD 250
+#define RIGHT_SENSOR_THRESHOLD 250
+#define DISPENSE_DURATION 1000
+#define DISPENSE_SPEED 1800
+#define STOP_SPEED 2048
+#define POST_DISPENSE_DELAY 1000
+
 JrkG2I2C jrk;
+
+bool detect(int sensor_pin, int threshold) {
+  float measuredSensor = analogRead(sensor_pin);
+  Serial.println(measuredSensor);
+  if (measuredSensor > threshold) {
+    return true;
+  }
+  return false;
+}
+
+void dispense() {
+  Serial.println("Dispensing");
+  jrk.setTarget(DISPENSE_SPEED);
+  delay(DISPENSE_DURATION);
+  jrk.setTarget(STOP_SPEED);
+  delay(POST_DISPENSE_DELAY);
+}
 
 void setup()
 {
@@ -15,9 +42,8 @@ void setup()
 
 void loop()
 {
-  delay(1000);
-  jrk.setTarget(2048);
-  delay(1000);
-  jrk.setTarget(1800);
-  Serial.println("loop");
+  if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD)) {
+    dispense();
+  }
+  delay(100);
 }
