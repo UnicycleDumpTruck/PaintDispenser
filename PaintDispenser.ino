@@ -17,10 +17,10 @@
 #define POST_DISPENSE_DELAY 0
 
 #define LED_PIN 9
-#define LED_COUNT 13
-#define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather 3.3v regulator
-#define FILL_DELAY 40
-#define UNFILL_DELAY 200
+#define LED_COUNT 13 // 13 leds on prototype housing
+#define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
+#define FILL_DELAY 40 // delay between leds before dispense
+#define UNFILL_DELAY 40 // delay between leds after dispense
 #define SOLID_GREEN 1
 #define SOLID_RED   2
 
