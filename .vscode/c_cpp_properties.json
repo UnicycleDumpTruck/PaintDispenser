@@ -7,7 +7,10 @@
                 "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.14\\**",
                 "C:\\Users\\jhighsmith\\AppData\\Local\\Arduino15\\packages\\**",
                 "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\jrk-g2",
-                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel"
+                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel",
+                "C:\\Users\\JHighsmith\\Documents\\Arduino\\libraries\\WiFiNINA\\src",
+                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\Adafruit_SleepyDog_Library",
+                "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.3\\cores\\arduino"
             ],
             "intelliSenseMode": "msvc-x64",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.26.28801/bin/Hostx64/x64/cl.exe",

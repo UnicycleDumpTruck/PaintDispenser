@@ -6,8 +6,111 @@
 // NeoPixel LED strip connected to pin 9
 
 
+#include <Adafruit_SleepyDog.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include <WiFiUdp.h>
+#include "arduino_secrets.h"
+
+char ssid[] = SECRET_SSID;		// your network SSID (name)
+char pass[] = SECRET_PASS;    	// your network password (use for WPA, or use as key for WEP)
+int status = WL_IDLE_STATUS;	// the WiFi radio's status
+
+long prevWifiCheckMillis = 0;
+long wifiInterval = 300000; // Check the wifi connection every 5 minutes
+
+#define SPIWIFI       SPI  // The SPI port
+#define SPIWIFI_SS    13   // Chip select pin
+#define ESP32_RESETN  12   // Reset pin
+#define SPIWIFI_ACK   11   // a.k.a BUSY or READY pin
+#define ESP32_GPIO0   10
+
+IPAddress ip(10, 10, 212, 101);		// will change when moved to new VLAN
+//IPAddress ip(192, 168, 0, 101);		// will change when moved to new VLAN
+unsigned int localPort = 8888;      // local port to listen on
+
+byte gateway[] = {10, 10, 212, 5}; // was .5 or .15
+byte subnet[] = {255, 255, 255, 0};
+byte dnsServer[] = {10, 10, 100, 20}; // byte dnsServer[] = {10, 10, 100, 20};
+IPAddress splunkIp(10, 10, 100, 150);
+unsigned int splunkPort = 4514;
+String pingHost = "10.10.212.129";
+int pingResult;
+const char cEquals[] = "c=";
+const char tEquals[] = " t=";
+const char sEquals[] = " s=";
+const char gEquals[] = " g=";
+const char bEquals[] = " b=";
+const char fEquals[] = " f=";
+
+
+WiFiUDP Udp;
+
+void selectWiFi() {
+  //delay(100);
+//  digitalWrite(SPIWIFI_SS, LOW);
+  delay(100);
+}
+
+void setupWiFi()
+{
+	//Configure pins for Adafruit ATWINC1500 Feather
+
+	// Set up the pins!
+	WiFi.setPins(SPIWIFI_SS, SPIWIFI_ACK, ESP32_RESETN, ESP32_GPIO0, &SPIWIFI);
+
+	// check for the WiFi module:
+	while (WiFi.status() == WL_NO_MODULE) {
+		Serial.println("Communication with WiFi module failed!");
+		// don't continue
+		delay(1000);
+	}
+	String fv = WiFi.firmwareVersion();
+	Serial.println(fv);
+	if (fv < "1.0.0") {
+		Serial.println("Please upgrade the firmware");
+		while (1) delay(10);
+	}
+	Serial.println("Firmware OK");
+
+	// print your MAC address:
+	byte mac[6];
+	WiFi.macAddress(mac);
+	Serial.print("MAC: ");
+	printMacAddress(mac);
+
+
+	// attempt to connect to WiFi network:
+	while ( status != WL_CONNECTED) {
+		Serial.print(F("Attempting to connect to WPA SSID: "));
+		Serial.println(ssid);
+		
+		WiFi.config(ip, dnsServer, gateway, subnet); 
+		// Connect to WPA/WPA2 network:
+		status = WiFi.begin(ssid, pass);
+
+		// wait 10 seconds for connection:
+		for (int i=0; i>10; i++) {
+			delay(1000);
+			Watchdog.reset();
+		}
+	}
+
+	// you're connected now, so print out the data:
+	Serial.print(F("You're connected to the network"));
+	printCurrentNet();
+	printWiFiData();
+
+	Udp.begin(localPort);
+	Udp.beginPacket(splunkIp, splunkPort);
+	Udp.write("c=0 reconnect=1");
+	Udp.endPacket();
+
+
+}
 
 #include <JrkG2.h>
+
 #include <Adafruit_NeoPixel.h>
 
 #define LEFT_SENSOR_PIN A0
@@ -70,13 +173,123 @@ void ledRed() { // Light strip full red, no delays
   }
 }
 
+void sendSplunkEvent(int cubeID, int transmission_number)
+{
+	char buf[16];
+	selectWiFi();
+	Udp.beginPacket(splunkIp, splunkPort);
+	Udp.write(cEquals);
+	Udp.write(itoa(cubeID, buf, 10));
+	Udp.write(tEquals);
+	Udp.write(itoa(transmission_number, buf, 10));		
+	if (Udp.endPacket() == 1) {
+		Serial.print(F(" Packet sent"));
+	} else {
+		Serial.print(F(" Error sending UDP"));
+	}		
+	Serial.println(F(""));
+}
+
+
+void printWiFiData() {
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+  Serial.println(ip);
+
+  // print your MAC address:
+  byte mac[6];
+  WiFi.macAddress(mac);
+  Serial.print("MAC address: ");
+  printMacAddress(mac);
+
+}
+
+void printCurrentNet() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print the MAC address of the router you're attached to:
+  byte bssid[6];
+  WiFi.BSSID(bssid);
+  Serial.print("BSSID: ");
+  printMacAddress(bssid);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.println(rssi);
+
+  // print the encryption type:
+  byte encryption = WiFi.encryptionType();
+  Serial.print("Encryption Type:");
+  Serial.println(encryption, HEX);
+  Serial.println();
+}
+
+void printMacAddress(byte mac[]) {
+  for (int i = 5; i >= 0; i--) {
+    if (mac[i] < 16) {
+      Serial.print("0");
+    }
+    Serial.print(mac[i], HEX);
+    if (i > 0) {
+      Serial.print(":");
+    }
+  }
+  Serial.println();
+}
+
 void setup()
 {
-  Wire.begin(); // Set up I2C.
-  Serial.begin(115200); // Commence Serial communication
-  strip.begin(); // Start the NeoPixel strip
-  ledGreen();
-}
+	Wire.begin(); // Set up I2C.
+	Serial.begin(115200); // Commence Serial communication
+	strip.begin(); // Start the NeoPixel strip
+	ledGreen();
+
+	pinMode(ESP32_RESETN,OUTPUT);
+	digitalWrite(ESP32_RESETN,LOW);
+	delay(500);
+	digitalWrite(ESP32_RESETN,HIGH);
+
+	setupWiFi();
+	
+	Serial.print(F("Pinging "));
+	Serial.print(pingHost);
+	Serial.print(F(": "));
+
+	pingResult = WiFi.ping(pingHost);
+
+	if (pingResult >= 0) {
+		Serial.print(F("SUCCESS! RTT = "));
+		Serial.print(pingResult);
+		Serial.println(F(" ms"));
+	} else {
+		Serial.print(F("FAILED! Error code: "));
+		Serial.println(pingResult);
+	}
+
+	Serial.println(F("Sending reboot=1"));
+	Udp.beginPacket(splunkIp, splunkPort);
+	Udp.write("c=0 reboot=1");
+	Udp.endPacket();
+
+	// First a normal example of using the watchdog timer.
+	// Enable the watchdog by calling Watchdog.enable() as below.
+	// This will turn on the watchdog timer with a ~4 second timeout
+	// before reseting the Arduino. The estimated actual milliseconds
+	// before reset (in milliseconds) is returned.
+	// Make sure to reset the watchdog before the countdown expires or
+	// the Arduino will reset!
+	int countdownMS = Watchdog.enable(4000);
+	Serial.print(F("Enabled the watchdog with max countdown of "));
+	Serial.print(countdownMS, DEC);
+	Serial.println(F(" milliseconds!"));
+	Serial.println();
+
+} // End of setup //
 
 void loop()
 {

@@ -1,0 +1,8 @@
+.*
+*.bin
+*.log
+*.db
+!.gitignore
+secrets.h
+secrets.yaml
+arduino_secrets.h
