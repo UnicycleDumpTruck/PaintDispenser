@@ -23,9 +23,9 @@ long wifiInterval = 300000; // Check the wifi connection every 5 minutes
 #define SPIWIFI_SS    13   // Chip select pin
 #define ESP32_RESETN  12   // Reset pin
 #define SPIWIFI_ACK   11   // a.k.a BUSY or READY pin
-#define ESP32_GPIO0   10
+#define ESP32_GPIO0   -1
 
-IPAddress ip(10, 10, 212, 101);		// will change when moved to new VLAN
+IPAddress ip(10, 10, 212, 110);		// will change when moved to new VLAN
 //IPAddress ip(192, 168, 0, 101);		// will change when moved to new VLAN
 unsigned int localPort = 8888;      // local port to listen on
 
@@ -248,6 +248,8 @@ void setup()
 	Serial.begin(115200); // Commence Serial communication
 	strip.begin(); // Start the NeoPixel strip
 	ledGreen();
+
+	while (!Serial);
 
 	pinMode(ESP32_RESETN,OUTPUT);
 	digitalWrite(ESP32_RESETN,LOW);
