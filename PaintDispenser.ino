@@ -16,10 +16,10 @@
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
 
-#define LEFT_SENSOR_PIN A0
-#define RIGHT_SENSOR_PIN A1
+#define LEFT_SENSOR_PIN A1
+#define RIGHT_SENSOR_PIN A0
 #define LEFT_SENSOR_THRESHOLD 200
-#define RIGHT_SENSOR_THRESHOLD 200
+#define RIGHT_SENSOR_THRESHOLD 245
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
@@ -166,7 +166,7 @@ void loop()
 bool detect(int sensor_pin, int threshold)
 { // Read a sensor, return true if it's over the threshold
   float measuredSensor = analogRead(sensor_pin);
-  //Serial.println(measuredSensor);
+  Serial.println(measuredSensor);
   if (measuredSensor > threshold)
   {
     return true;
