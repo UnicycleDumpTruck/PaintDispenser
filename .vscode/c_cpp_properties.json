@@ -6,14 +6,14 @@
                 "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\**",
                 "C:\\Users\\JHighsmith\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.14\\**",
                 "C:\\Users\\jhighsmith\\AppData\\Local\\Arduino15\\packages\\**",
-                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\jrk-g2",
-                "C:\\Users\\jhighsmith\\OneDrive - Marbles Kids Museum\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel"
+                "libraries\\Adafruit_SleepyDog",
+                "libraries\\jrk-g2-arduino",
+                "libraries\\Adafruit_NeoPixel"
             ],
             "intelliSenseMode": "msvc-x64",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.26.28801/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
             "cppStandard": "c++17"
-            
         }
     ],
     "version": 4
