@@ -10,9 +10,7 @@
 
 // Pololu #3146 Jrk G2 18v19 Motor Controller connected via i2c, also using pins 5 and 6 for RST and ERR, not sure which.
 
-// NeoPixel LED strip connected to pin 9
-
-
+// NeoPixel LED strip connected to pin 9 through 470Ω resistor
 
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
@@ -48,56 +46,28 @@ bool dispensing = false;
 bool palette_clear = false;
 bool not_dispensed = true;
 
-bool detect(int sensor_pin, int threshold) { // Read a sensor, return true if it's over the threshold
-  float measuredSensor = analogRead(sensor_pin);
-  //Serial.println(measuredSensor);
-  if (measuredSensor > threshold) {
-    return true;
-  }
-  return false;
-}
 
-void dispense() { // Run the motor at DISPENSE_SPEED for DISPENSE_DURATION
-  Serial.println("Dispensing");
-  jrk.setTarget(DISPENSE_SPEED);
-  delay(DISPENSE_DURATION);
-  jrk.setTarget(STOP_SPEED);
-  delay(POST_DISPENSE_DELAY);
-}
+// ██████╗ ██████╗  ██████╗ ████████╗ ██████╗ ████████╗██╗   ██╗██████╗ ███████╗███████╗
+// ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔════╝
+// ██████╔╝██████╔╝██║   ██║   ██║   ██║   ██║   ██║    ╚████╔╝ ██████╔╝█████╗  ███████╗
+// ██╔═══╝ ██╔══██╗██║   ██║   ██║   ██║   ██║   ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ╚════██║
+// ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝   ██║      ██║   ██║     ███████╗███████║
+// ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝    ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚══════╝
+                                                                                     
+bool detect(int sensor_pin, int threshold);
+void dispense();
+void beginDispense();
+void endDispense();
+void ledGreen();
+void ledRed();
 
-void beginDispense() {
-  Serial.println("Beginning Dispense");
-  dispensing = true;
-  dispense_begin_millis = millis();
-  jrk.setTarget(DISPENSE_SPEED);
-}
 
-void endDispense() {
-  Serial.println("Ending Dispense");
-  dispensing = false;
-  jrk.setTarget(STOP_SPEED);
-}
-
-void ledGreen() { // Light strip full green, no delays
-  for (int i=LED_COUNT; i>=0; i--) {
-    strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0);
-    strip.show();
-  }
-}
-
-void ledRed() { // Light strip full red, no delays
-  for (int i=0; i<LED_COUNT; i++) {
-    strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
-    strip.show();
-  }
-}
-
-//    ███████╗███████╗████████╗██╗   ██╗██████╗ 
-//    ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
-//    ███████╗█████╗     ██║   ██║   ██║██████╔╝
-//    ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝ 
-//    ███████║███████╗   ██║   ╚██████╔╝██║     
-//    ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
+// ███████╗███████╗████████╗██╗   ██╗██████╗ 
+// ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
+// ███████╗█████╗     ██║   ██║   ██║██████╔╝
+// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝ 
+// ███████║███████╗   ██║   ╚██████╔╝██║     
+// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
 void setup()
 {
   Wire.begin(); // Set up I2C.
@@ -107,12 +77,12 @@ void setup()
 }
 
 
-//    ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗ 
-//    ████╗ ████║██╔══██╗██║████╗  ██║    ██║     ██╔═══██╗██╔═══██╗██╔══██╗
-//    ██╔████╔██║███████║██║██╔██╗ ██║    ██║     ██║   ██║██║   ██║██████╔╝
-//    ██║╚██╔╝██║██╔══██║██║██║╚██╗██║    ██║     ██║   ██║██║   ██║██╔═══╝ 
-//    ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║    ███████╗╚██████╔╝╚██████╔╝██║     
-//    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     
+// ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗ 
+// ████╗ ████║██╔══██╗██║████╗  ██║    ██║     ██╔═══██╗██╔═══██╗██╔══██╗
+// ██╔████╔██║███████║██║██╔██╗ ██║    ██║     ██║   ██║██║   ██║██████╔╝
+// ██║╚██╔╝██║██╔══██║██║██║╚██╗██║    ██║     ██║   ██║██║   ██║██╔═══╝ 
+// ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║    ███████╗╚██████╔╝╚██████╔╝██║     
+// ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     
 void loop()
 {
   
@@ -174,9 +144,54 @@ void loop()
 
 } // END OF MAIN LOOP
 
-//    ███████╗███╗   ██╗██████╗ 
-//    ██╔════╝████╗  ██║██╔══██╗
-//    █████╗  ██╔██╗ ██║██║  ██║
-//    ██╔══╝  ██║╚██╗██║██║  ██║
-//    ███████╗██║ ╚████║██████╔╝
-//    ╚══════╝╚═╝  ╚═══╝╚═════╝ 
+
+// ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+// ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+// █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+// ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+// ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+// ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+bool detect(int sensor_pin, int threshold) { // Read a sensor, return true if it's over the threshold
+  float measuredSensor = analogRead(sensor_pin);
+  //Serial.println(measuredSensor);
+  if (measuredSensor > threshold) {
+    return true;
+  }
+  return false;
+}
+
+void beginDispense() {
+  Serial.println("Beginning Dispense");
+  dispensing = true;
+  dispense_begin_millis = millis();
+  jrk.setTarget(DISPENSE_SPEED);
+}
+
+void endDispense() {
+  Serial.println("Ending Dispense");
+  dispensing = false;
+  jrk.setTarget(STOP_SPEED);
+}
+
+void ledGreen() { // Light strip full green, no delays
+  for (int i=LED_COUNT; i>=0; i--) {
+    strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0);
+    strip.show();
+  }
+}
+
+void ledRed() { // Light strip full red, no delays
+  for (int i=0; i<LED_COUNT; i++) {
+    strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
+    strip.show();
+  }
+}
+
+
+// ███████╗███╗   ██╗██████╗ 
+// ██╔════╝████╗  ██║██╔══██╗
+// █████╗  ██╔██╗ ██║██║  ██║
+// ██╔══╝  ██║╚██╗██║██║  ██║
+// ███████╗██║ ╚████║██████╔╝
+// ╚══════╝╚═╝  ╚═══╝╚═════╝ 
