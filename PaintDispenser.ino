@@ -14,8 +14,8 @@
 #define RIGHT_SENSOR_PIN A1
 #define LEFT_SENSOR_THRESHOLD 200
 #define RIGHT_SENSOR_THRESHOLD 200
-#define DISPENSE_DURATION 1000
-#define DISPENSE_SPEED 1800
+#define DISPENSE_DURATION 2000
+#define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
 #define POST_DISPENSE_DELAY 0 // Not used, as lights must 'unfill', functioning as delay
 
