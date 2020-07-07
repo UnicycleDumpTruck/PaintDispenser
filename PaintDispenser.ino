@@ -1,4 +1,4 @@
-//██████╗  █████╗ ██╗███╗   ██╗████████╗    ██████╗ ██╗███████╗██████╗ ███████╗███╗   ██╗███████╗███████╗██████╗ 
+//██████╗  █████╗ ██╗███╗   ██╗████████╗    ██████╗ ██╗███████╗██████╗ ███████╗███╗   ██╗███████╗███████╗██████╗
 //██╔══██╗██╔══██╗██║████╗  ██║╚══██╔══╝    ██╔══██╗██║██╔════╝██╔══██╗██╔════╝████╗  ██║██╔════╝██╔════╝██╔══██╗
 //██████╔╝███████║██║██╔██╗ ██║   ██║       ██║  ██║██║███████╗██████╔╝█████╗  ██╔██╗ ██║███████╗█████╗  ██████╔╝
 //██╔═══╝ ██╔══██║██║██║╚██╗██║   ██║       ██║  ██║██║╚════██║██╔═══╝ ██╔══╝  ██║╚██╗██║╚════██║██╔══╝  ██╔══██╗
@@ -9,6 +9,7 @@
 // https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/using-with-arduino-ide
 
 // Pololu #3146 Jrk G2 18v19 Motor Controller connected via i2c, also using pins 5 and 6 for RST and ERR, not sure which.
+// https://www.pololu.com/product/1363
 
 // NeoPixel LED strip connected to pin 9 through 470Ω resistor
 
@@ -25,27 +26,25 @@
 #define POST_DISPENSE_DELAY 0 // Not used, as lights must 'unfill', functioning as delay
 
 #define LED_PIN 9
-#define LED_COUNT 13 // 13 leds on prototype housing
+#define LED_COUNT 13        // 13 leds on prototype housing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
-#define FILL_DELAY 40 // delay between leds before dispense
-#define UNFILL_DELAY 40 // delay between leds after dispense
+#define FILL_DELAY 40       // delay between leds before dispense
+#define UNFILL_DELAY 40     // delay between leds after dispense
 #define SOLID_GREEN 1
-#define SOLID_RED   2
+#define SOLID_RED 2
 
 unsigned long prev_led_change_millis = 0; // When the last LED change occurred.
-int red_leader = -1; // Position of the lowest red LED.
-int led_goal = SOLID_GREEN; // Just a goal, not necessarily the current state.
-
+int red_leader = -1;                      // Position of the lowest red LED.
+int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the current state.
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-JrkG2I2C jrk; // Pololu motor controller
+JrkG2I2C jrk;                            // Pololu motor controller
 unsigned long dispense_begin_millis = 0; // When the motor began dispensing Paint
 bool dispensing = false;
 
 bool palette_clear = false;
 bool not_dispensed = true;
-
 
 // ██████╗ ██████╗  ██████╗ ████████╗ ██████╗ ████████╗██╗   ██╗██████╗ ███████╗███████╗
 // ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔════╝
@@ -53,7 +52,7 @@ bool not_dispensed = true;
 // ██╔═══╝ ██╔══██╗██║   ██║   ██║   ██║   ██║   ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ╚════██║
 // ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝   ██║      ██║   ██║     ███████╗███████║
 // ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝    ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚══════╝
-                                                                                     
+
 bool detect(int sensor_pin, int threshold);
 void dispense();
 void beginDispense();
@@ -61,76 +60,89 @@ void endDispense();
 void ledGreen();
 void ledRed();
 
-
-// ███████╗███████╗████████╗██╗   ██╗██████╗ 
+// ███████╗███████╗████████╗██╗   ██╗██████╗
 // ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
 // ███████╗█████╗     ██║   ██║   ██║██████╔╝
-// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝ 
-// ███████║███████╗   ██║   ╚██████╔╝██║     
-// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
+// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝
+// ███████║███████╗   ██║   ╚██████╔╝██║
+// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
 void setup()
 {
-  Wire.begin(); // Set up I2C.
+  Wire.begin();         // Set up I2C.
   Serial.begin(115200); // Commence Serial communication
-  strip.begin(); // Start the NeoPixel strip
+  strip.begin();        // Start the NeoPixel strip
   ledGreen();
 }
 
-
-// ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗ 
+// ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗
 // ████╗ ████║██╔══██╗██║████╗  ██║    ██║     ██╔═══██╗██╔═══██╗██╔══██╗
 // ██╔████╔██║███████║██║██╔██╗ ██║    ██║     ██║   ██║██║   ██║██████╔╝
-// ██║╚██╔╝██║██╔══██║██║██║╚██╗██║    ██║     ██║   ██║██║   ██║██╔═══╝ 
-// ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║    ███████╗╚██████╔╝╚██████╔╝██║     
-// ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     
+// ██║╚██╔╝██║██╔══██║██║██║╚██╗██║    ██║     ██║   ██║██║   ██║██╔═══╝
+// ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║    ███████╗╚██████╔╝╚██████╔╝██║
+// ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝
 void loop()
 {
-  
+
   // End dispensing if DISPENSE_DURATION has elapsed:
-  if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing) {
+  if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
+  {
     Serial.println("Duration elapsed");
     endDispense();
   }
-  
+
   // Manage LED chain:
-  if ((led_goal == SOLID_GREEN) && red_leader > -1) { // If our goal is green, but we aren't fully green yet
-    if ((millis() - prev_led_change_millis) > UNFILL_DELAY) { // if we have waited long enough since the last led change
+  if ((led_goal == SOLID_GREEN) && red_leader > -1)
+  { // If our goal is green, but we aren't fully green yet
+    if ((millis() - prev_led_change_millis) > UNFILL_DELAY)
+    { // if we have waited long enough since the last led change
       strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0);
       strip.show();
       red_leader--; // Decrement after led change
       prev_led_change_millis = millis();
     }
-  } else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT) { // if our goal is red, but we aren't fully red yet
-    if ((millis() - prev_led_change_millis) > FILL_DELAY) { // if we have waited long enough since the last led change
+  }
+  else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT)
+  { // if our goal is red, but we aren't fully red yet
+    if ((millis() - prev_led_change_millis) > FILL_DELAY)
+    {               // if we have waited long enough since the last led change
       red_leader++; // Increment before led change
       strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0);
       strip.show();
       prev_led_change_millis = millis();
     }
   } // else we have achieved our led goal
-  
+
   // Read sensors, start dispense if necessary, end if palette withdrawn early:
-  if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD)) { // palette now present
-    if (palette_clear) { // Palette was not previously present
+  if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD))
+  { // palette now present
+    if (palette_clear)
+    { // Palette was not previously present
       palette_clear = false;
       //Serial.println("Palette appeared");
       led_goal = SOLID_RED;
-    } else { // Palette still there from previous dispense
+    }
+    else
+    { // Palette still there from previous dispense
       //Serial.println("hanging around");
-      if ((red_leader == LED_COUNT) && not_dispensed) {
+      if ((red_leader == LED_COUNT) && not_dispensed)
+      {
         not_dispensed = false;
         //ledRed();
         //dispense();
         beginDispense();
       }
-    } 
-  } else { // palette absent
-    if (dispensing) {
+    }
+  }
+  else
+  { // palette absent
+    if (dispensing)
+    {
       Serial.println("Palette disappeard prematurely");
       endDispense();
     }
-    
-    if (red_leader < 0) { // been empty long enough to allow new dispense event
+
+    if (red_leader < 0)
+    { // been empty long enough to allow new dispense event
       not_dispensed = true;
       //ledGreen();
     }
@@ -144,7 +156,6 @@ void loop()
 
 } // END OF MAIN LOOP
 
-
 // ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
 // ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
 // █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
@@ -152,46 +163,53 @@ void loop()
 // ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
-bool detect(int sensor_pin, int threshold) { // Read a sensor, return true if it's over the threshold
+bool detect(int sensor_pin, int threshold)
+{ // Read a sensor, return true if it's over the threshold
   float measuredSensor = analogRead(sensor_pin);
   //Serial.println(measuredSensor);
-  if (measuredSensor > threshold) {
+  if (measuredSensor > threshold)
+  {
     return true;
   }
   return false;
 }
 
-void beginDispense() {
+void beginDispense()
+{
   Serial.println("Beginning Dispense");
   dispensing = true;
   dispense_begin_millis = millis();
   jrk.setTarget(DISPENSE_SPEED);
 }
 
-void endDispense() {
+void endDispense()
+{
   Serial.println("Ending Dispense");
   dispensing = false;
   jrk.setTarget(STOP_SPEED);
 }
 
-void ledGreen() { // Light strip full green, no delays
-  for (int i=LED_COUNT; i>=0; i--) {
+void ledGreen()
+{ // Light strip full green, no delays
+  for (int i = LED_COUNT; i >= 0; i--)
+  {
     strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0);
     strip.show();
   }
 }
 
-void ledRed() { // Light strip full red, no delays
-  for (int i=0; i<LED_COUNT; i++) {
+void ledRed()
+{ // Light strip full red, no delays
+  for (int i = 0; i < LED_COUNT; i++)
+  {
     strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
     strip.show();
   }
 }
 
-
-// ███████╗███╗   ██╗██████╗ 
+// ███████╗███╗   ██╗██████╗
 // ██╔════╝████╗  ██║██╔══██╗
 // █████╗  ██╔██╗ ██║██║  ██║
 // ██╔══╝  ██║╚██╗██║██║  ██║
 // ███████╗██║ ╚████║██████╔╝
-// ╚══════╝╚═╝  ╚═══╝╚═════╝ 
+// ╚══════╝╚═╝  ╚═══╝╚═════╝
