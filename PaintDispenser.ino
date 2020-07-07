@@ -21,8 +21,8 @@
 #define RIGHT_SENSOR_PIN A1
 #define LEFT_SENSOR_THRESHOLD 200
 #define RIGHT_SENSOR_THRESHOLD 200
-#define DISPENSE_DURATION 1000
-#define DISPENSE_SPEED 1800
+#define DISPENSE_DURATION 2000
+#define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
 #define POST_DISPENSE_DELAY 0 // Not used, as lights must 'unfill', functioning as delay
 
@@ -50,7 +50,7 @@ bool not_dispensed = true;
 
 bool detect(int sensor_pin, int threshold) { // Read a sensor, return true if it's over the threshold
   float measuredSensor = analogRead(sensor_pin);
-  Serial.println(measuredSensor);
+  //Serial.println(measuredSensor);
   if (measuredSensor > threshold) {
     return true;
   }
@@ -68,13 +68,14 @@ void dispense() { // Run the motor at DISPENSE_SPEED for DISPENSE_DURATION
 void beginDispense() {
   Serial.println("Beginning Dispense");
   dispensing = true;
-  //jrk.setTarget(DISPENSE_SPEED);
+  dispense_begin_millis = millis();
+  jrk.setTarget(DISPENSE_SPEED);
 }
 
 void endDispense() {
   Serial.println("Ending Dispense");
   dispensing = false;
-  //jrk.setTarget(STOP_SPEED);
+  jrk.setTarget(STOP_SPEED);
 }
 
 void ledGreen() { // Light strip full green, no delays
@@ -117,6 +118,7 @@ void loop()
   
   // End dispensing if DISPENSE_DURATION has elapsed:
   if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing) {
+    Serial.println("Duration elapsed");
     endDispense();
   }
   
@@ -141,10 +143,10 @@ void loop()
   if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD)) { // palette now present
     if (palette_clear) { // Palette was not previously present
       palette_clear = false;
-      Serial.println("Palette appeared");
+      //Serial.println("Palette appeared");
       led_goal = SOLID_RED;
     } else { // Palette still there from previous dispense
-      Serial.println("hanging around");
+      //Serial.println("hanging around");
       if ((red_leader == LED_COUNT) && not_dispensed) {
         not_dispensed = false;
         //ledRed();
@@ -154,6 +156,7 @@ void loop()
     } 
   } else { // palette absent
     if (dispensing) {
+      Serial.println("Palette disappeard prematurely");
       endDispense();
     }
     
@@ -163,7 +166,7 @@ void loop()
     }
 
     palette_clear = true;
-    Serial.println("Palette gone");
+    //Serial.println("Palette gone");
     led_goal = SOLID_GREEN;
   }
 
