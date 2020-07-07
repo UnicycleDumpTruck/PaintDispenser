@@ -9,7 +9,7 @@
 // https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/using-with-arduino-ide
 
 // Pololu #3146 Jrk G2 18v19 Motor Controller connected via i2c, also using pins 5 and 6 for RST and ERR, not sure which.
-// https://www.pololu.com/product/1363
+// https://www.pololu.com/product/3146
 
 // NeoPixel LED strip connected to pin 9 through 470Ω resistor
 
