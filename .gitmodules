@@ -1,0 +1,9 @@
+[submodule "libraries/Adafruit_SleepyDog"]
+	path = libraries/Adafruit_SleepyDog
+	url = https://github.com/adafruit/Adafruit_SleepyDog
+[submodule "libraries/Adafruit_NeoPixel"]
+	path = libraries/Adafruit_NeoPixel
+	url = https://github.com/adafruit/Adafruit_NeoPixel
+[submodule "libraries/jrk-g2-arduino"]
+	path = libraries/jrk-g2-arduino
+	url = https://github.com/pololu/jrk-g2-arduino
