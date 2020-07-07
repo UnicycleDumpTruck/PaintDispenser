@@ -1,7 +1,7 @@
 {
     "sketch": "PaintDispenser.ino",
     "board": "adafruit:samd:adafruit_feather_m0_express",
-    "port": "COM7",
+    "port": "COM10",
     "output": "../build",
     "configuration": "usbstack=arduino,debug=off"
 }
