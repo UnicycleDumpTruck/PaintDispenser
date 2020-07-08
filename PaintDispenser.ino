@@ -16,6 +16,7 @@
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
 
+#define NUMBER_OF_SAMPLES 20
 #define LEFT_SENSOR_PIN A1
 #define RIGHT_SENSOR_PIN A0
 #define LEFT_SENSOR_THRESHOLD 200
@@ -163,11 +164,41 @@ void loop()
 // ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
+// Sort an array
+void sort(float a[], int size)
+{
+  for (int i = 0; i < (size - 1); i++)
+  {
+    bool flag = true;
+    for (int o = 0; o < (size - (i + 1)); o++)
+    {
+      if (a[o] > a[o + 1])
+      {
+        int t = a[o];
+        a[o] = a[o + 1];
+        a[o + 1] = t;
+        flag = false;
+      }
+    }
+    if (flag)
+      break;
+  }
+}
+
 bool detect(int sensor_pin, int threshold)
 { // Read a sensor, return true if it's over the threshold
-  float measuredSensor = analogRead(sensor_pin);
-  Serial.println(measuredSensor);
-  if (measuredSensor > threshold)
+  float samples[NUMBER_OF_SAMPLES];
+
+  for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
+  {
+    samples[i] = analogRead(sensor_pin);
+  }
+
+  sort(samples, NUMBER_OF_SAMPLES);
+  float medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
+
+  Serial.println(medianReading);
+  if (medianReading > threshold)
   {
     return true;
   }
