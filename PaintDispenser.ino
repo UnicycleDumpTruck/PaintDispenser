@@ -222,7 +222,7 @@ bool detect(int sensor_pin, int threshold)
 }
 
 void beginDispense()
-{
+{ // Start pump motor
   Serial.println("Beginning Dispense");
   dispensing = true;
   dispense_begin_millis = millis();
@@ -230,7 +230,7 @@ void beginDispense()
 }
 
 void endDispense()
-{
+{ // Stop pump motor
   Serial.println("Ending Dispense");
   dispensing = false;
   jrk.setTarget(STOP_SPEED);
