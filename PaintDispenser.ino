@@ -18,8 +18,8 @@
 
 #define LEFT_SENSOR_PIN A1
 #define RIGHT_SENSOR_PIN A0
-#define LEFT_SENSOR_THRESHOLD 200
-#define RIGHT_SENSOR_THRESHOLD 245
+#define LEFT_SENSOR_THRESHOLD 195  // 200 worked one day in the shop, 195 in galaxy
+#define RIGHT_SENSOR_THRESHOLD 210 // 245 worked one day in the shop, 210 in galaxy
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
@@ -165,7 +165,10 @@ void loop()
 
 bool detect(int sensor_pin, int threshold)
 { // Read a sensor, return true if it's over the threshold
+  // #TODO implement averaging over time
   float measuredSensor = analogRead(sensor_pin);
+  Serial.print(sensor_pin);
+  Serial.print("  ");
   Serial.println(measuredSensor);
   if (measuredSensor > threshold)
   {
