@@ -54,6 +54,7 @@ bool not_dispensed = true;
 // ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝   ██║      ██║   ██║     ███████╗███████║
 // ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝    ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚══════╝
 
+void sort(int arr[], int size);
 bool detect(int sensor_pin, int threshold);
 void dispense();
 void beginDispense();
@@ -167,22 +168,22 @@ void loop()
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
 // Sort an array
-void sort(int a[], int size)
+void sort(int arr[], int size)
 {
   for (int i = 0; i < (size - 1); i++)
   {
-    bool flag = true;
+    bool doneFlag = true;
     for (int o = 0; o < (size - (i + 1)); o++)
     {
-      if (a[o] > a[o + 1])
+      if (arr[o] > arr[o + 1])
       {
-        int t = a[o];
-        a[o] = a[o + 1];
-        a[o + 1] = t;
-        flag = false;
+        int tmp = arr[o];
+        arr[o] = arr[o + 1];
+        arr[o + 1] = tmp;
+        doneFlag = false;
       }
     }
-    if (flag)
+    if (doneFlag)
       break;
   }
 }
