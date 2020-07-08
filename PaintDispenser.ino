@@ -167,7 +167,7 @@ void loop()
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
 // Sort an array
-void sort(float a[], int size)
+void sort(int a[], int size)
 {
   for (int i = 0; i < (size - 1); i++)
   {
@@ -189,7 +189,7 @@ void sort(float a[], int size)
 
 bool detect(int sensor_pin, int threshold)
 { // Read a sensor, return true if it's over the threshold
-  float samples[NUMBER_OF_SAMPLES];
+  int samples[NUMBER_OF_SAMPLES];
 
   for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
   {
@@ -198,7 +198,7 @@ bool detect(int sensor_pin, int threshold)
   }
 
   sort(samples, NUMBER_OF_SAMPLES);
-  float medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
+  int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
 
   if (sensor_pin == LEFT_SENSOR_PIN)
   {
