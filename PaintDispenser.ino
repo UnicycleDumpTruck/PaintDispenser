@@ -16,10 +16,11 @@
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
 
+#define NUMBER_OF_SAMPLES 20
 #define LEFT_SENSOR_PIN A1
 #define RIGHT_SENSOR_PIN A0
-#define LEFT_SENSOR_THRESHOLD 195  // 200 worked one day in the shop, 195 in galaxy
-#define RIGHT_SENSOR_THRESHOLD 210 // 245 worked one day in the shop, 210 in galaxy
+#define LEFT_SENSOR_THRESHOLD 190
+#define RIGHT_SENSOR_THRESHOLD 220
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
@@ -53,6 +54,7 @@ bool not_dispensed = true;
 // ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝   ██║      ██║   ██║     ███████╗███████║
 // ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝    ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚══════╝
 
+void sort(int arr[], int size);
 bool detect(int sensor_pin, int threshold);
 void dispense();
 void beginDispense();
@@ -113,7 +115,9 @@ void loop()
   } // else we have achieved our led goal
 
   // Read sensors, start dispense if necessary, end if palette withdrawn early:
-  if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD))
+  bool leftDetect = detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD);
+  bool rightDetect = detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD);
+  if (leftDetect && rightDetect)
   { // palette now present
     if (palette_clear)
     { // Palette was not previously present
@@ -163,14 +167,55 @@ void loop()
 // ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
+// Sort an array
+void sort(int arr[], int size)
+{
+  for (int i = 0; i < (size - 1); i++)
+  {
+    bool doneFlag = true;
+    for (int o = 0; o < (size - (i + 1)); o++)
+    {
+      if (arr[o] > arr[o + 1])
+      {
+        int tmp = arr[o];
+        arr[o] = arr[o + 1];
+        arr[o + 1] = tmp;
+        doneFlag = false;
+      }
+    }
+    if (doneFlag)
+      break;
+  }
+}
+
 bool detect(int sensor_pin, int threshold)
 { // Read a sensor, return true if it's over the threshold
-  // #TODO implement averaging over time
-  float measuredSensor = analogRead(sensor_pin);
-  Serial.print(sensor_pin);
-  Serial.print("  ");
-  Serial.println(measuredSensor);
-  if (measuredSensor > threshold)
+  int samples[NUMBER_OF_SAMPLES];
+
+  for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
+  {
+    samples[i] = analogRead(sensor_pin);
+    delay(1);
+  }
+
+  sort(samples, NUMBER_OF_SAMPLES);
+  int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
+
+  if (sensor_pin == LEFT_SENSOR_PIN)
+  {
+    Serial.print(sensor_pin);
+    Serial.print("  ");
+    Serial.print(medianReading);
+    Serial.print("  ");
+  }
+  else if (sensor_pin == RIGHT_SENSOR_PIN)
+  {
+    Serial.print(sensor_pin);
+    Serial.print("  ");
+    Serial.println(medianReading);
+  }
+
+  if (medianReading > threshold)
   {
     return true;
   }
@@ -178,7 +223,7 @@ bool detect(int sensor_pin, int threshold)
 }
 
 void beginDispense()
-{
+{ // Start pump motor
   Serial.println("Beginning Dispense");
   dispensing = true;
   dispense_begin_millis = millis();
@@ -186,7 +231,7 @@ void beginDispense()
 }
 
 void endDispense()
-{
+{ // Stop pump motor
   Serial.println("Ending Dispense");
   dispensing = false;
   jrk.setTarget(STOP_SPEED);
