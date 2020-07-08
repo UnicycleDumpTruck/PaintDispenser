@@ -71,7 +71,7 @@ void setup()
   Wire.begin();         // Set up I2C.
   Serial.begin(115200); // Commence Serial communication
   strip.begin();        // Start the NeoPixel strip
-  ledGreen();
+  ledGreen();           // Light them all green
 }
 
 // ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗
