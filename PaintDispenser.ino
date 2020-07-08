@@ -19,8 +19,8 @@
 #define NUMBER_OF_SAMPLES 20
 #define LEFT_SENSOR_PIN A1
 #define RIGHT_SENSOR_PIN A0
-#define LEFT_SENSOR_THRESHOLD 200
-#define RIGHT_SENSOR_THRESHOLD 245
+#define LEFT_SENSOR_THRESHOLD 190
+#define RIGHT_SENSOR_THRESHOLD 220
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
@@ -114,7 +114,9 @@ void loop()
   } // else we have achieved our led goal
 
   // Read sensors, start dispense if necessary, end if palette withdrawn early:
-  if (detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD) && detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD))
+  bool leftDetect = detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD);
+  bool rightDetect = detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD);
+  if (leftDetect && rightDetect)
   { // palette now present
     if (palette_clear)
     { // Palette was not previously present
@@ -192,12 +194,26 @@ bool detect(int sensor_pin, int threshold)
   for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
   {
     samples[i] = analogRead(sensor_pin);
+    delay(1);
   }
 
   sort(samples, NUMBER_OF_SAMPLES);
   float medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
 
-  Serial.println(medianReading);
+  if (sensor_pin == LEFT_SENSOR_PIN)
+  {
+    Serial.print(sensor_pin);
+    Serial.print("  ");
+    Serial.print(medianReading);
+    Serial.print("  ");
+  }
+  else if (sensor_pin == RIGHT_SENSOR_PIN)
+  {
+    Serial.print(sensor_pin);
+    Serial.print("  ");
+    Serial.println(medianReading);
+  }
+
   if (medianReading > threshold)
   {
     return true;
