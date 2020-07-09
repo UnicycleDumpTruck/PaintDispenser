@@ -16,7 +16,9 @@
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
 
-#define NUMBER_OF_SAMPLES 20
+#define DEBUG true // Comment out this line to disable Serial.print statements
+
+#define NUMBER_OF_SAMPLES 10 // Loop is delayed by at 2 * NUMBER_OF_SAMPLES millis
 #define LEFT_SENSOR_PIN A1
 #define RIGHT_SENSOR_PIN A0
 #define LEFT_SENSOR_THRESHOLD 190
@@ -29,8 +31,8 @@
 #define LED_PIN 9
 #define LED_COUNT 13        // 13 leds on prototype housing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
-#define FILL_DELAY 15       // delay between leds before dispense
-#define UNFILL_DELAY 10     // delay between leds after dispense
+#define FILL_DELAY 0        // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 0      // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -70,9 +72,11 @@ void ledRed();
 // ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
 void setup()
 {
-  Wire.begin();         // Set up I2C.
+  Wire.begin(); // Set up I2C.
+#ifdef DEBUG
   Serial.begin(115200); // Commence Serial communication
-  strip.begin();        // Start the NeoPixel strip
+#endif
+  strip.begin(); // Start the NeoPixel strip
   ledGreen();
 }
 
@@ -88,7 +92,9 @@ void loop()
   // End dispensing if DISPENSE_DURATION has elapsed:
   if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
   {
+#ifdef DEBUG
     Serial.println("Duration elapsed");
+#endif
     endDispense();
   }
 
@@ -122,12 +128,16 @@ void loop()
     if (palette_clear)
     { // Palette was not previously present
       palette_clear = false;
+#ifdef DEBUG
       //Serial.println("Palette appeared");
+#endif
       led_goal = SOLID_RED;
     }
     else
     { // Palette still there from previous dispense
+#ifdef DEBUG
       //Serial.println("hanging around");
+#endif
       if ((red_leader == LED_COUNT) && not_dispensed)
       {
         not_dispensed = false;
@@ -141,7 +151,9 @@ void loop()
   { // palette absent
     if (dispensing)
     {
+#ifdef DEBUG
       Serial.println("Palette disappeard prematurely");
+#endif
       endDispense();
     }
 
@@ -152,11 +164,13 @@ void loop()
     }
 
     palette_clear = true;
+#ifdef DEBUG
     //Serial.println("Palette gone");
+#endif
     led_goal = SOLID_GREEN;
   }
 
-  delay(5); // we don't need it running too fast
+  delay(0); // we don't need it running too fast
 
 } // END OF MAIN LOOP
 
@@ -201,6 +215,7 @@ bool detect(int sensor_pin, int threshold)
   sort(samples, NUMBER_OF_SAMPLES);
   int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
 
+#ifdef DEBUG
   if (sensor_pin == LEFT_SENSOR_PIN)
   {
     Serial.print(sensor_pin);
@@ -214,6 +229,7 @@ bool detect(int sensor_pin, int threshold)
     Serial.print("  ");
     Serial.println(medianReading);
   }
+#endif
 
   if (medianReading > threshold)
   {
@@ -224,7 +240,9 @@ bool detect(int sensor_pin, int threshold)
 
 void beginDispense()
 { // Start pump motor
+#ifdef DEBUG
   Serial.println("Beginning Dispense");
+#endif
   dispensing = true;
   dispense_begin_millis = millis();
   jrk.setTarget(DISPENSE_SPEED);
@@ -232,7 +250,9 @@ void beginDispense()
 
 void endDispense()
 { // Stop pump motor
+#ifdef DEBUG
   Serial.println("Ending Dispense");
+#endif
   dispensing = false;
   jrk.setTarget(STOP_SPEED);
 }
