@@ -19,7 +19,7 @@
 #define DEBUG true // Comment out this line to disable Serial.print statements
 
 // Comment out following line to stop dispense if palette withdrawn
-#define KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN true
+//#define KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN true
 
 #define NUMBER_OF_SAMPLES 10 // Loop is delayed by at 2 * NUMBER_OF_SAMPLES millis
 #define LEFT_SENSOR_PIN A1
