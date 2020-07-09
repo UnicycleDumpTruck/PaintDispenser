@@ -29,8 +29,8 @@
 #define LED_PIN 9
 #define LED_COUNT 13        // 13 leds on prototype housing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
-#define FILL_DELAY 40       // delay between leds before dispense
-#define UNFILL_DELAY 40     // delay between leds after dispense
+#define FILL_DELAY 15       // delay between leds before dispense
+#define UNFILL_DELAY 10     // delay between leds after dispense
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -73,7 +73,7 @@ void setup()
   Wire.begin();         // Set up I2C.
   Serial.begin(115200); // Commence Serial communication
   strip.begin();        // Start the NeoPixel strip
-  ledGreen();           // Light them all green
+  ledGreen();
 }
 
 // ███╗   ███╗ █████╗ ██╗███╗   ██╗    ██╗      ██████╗  ██████╗ ██████╗
