@@ -29,7 +29,6 @@
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
-#define POST_DISPENSE_DELAY 0 // Not used, as lights must 'unfill', functioning as delay
 
 #define LED_PIN 9
 #define LED_COUNT 13        // 13 leds on prototype housing
@@ -174,8 +173,6 @@ void loop()
 #endif
     led_goal = SOLID_GREEN;
   }
-
-  delay(0); // we don't need it running too fast
 
 } // END OF MAIN LOOP
 
