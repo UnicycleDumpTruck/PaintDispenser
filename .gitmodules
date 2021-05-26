@@ -7,3 +7,6 @@
 [submodule "libraries/jrk-g2-arduino"]
 	path = libraries/jrk-g2-arduino
 	url = https://github.com/pololu/jrk-g2-arduino
+[submodule "libraries/Adafruit_MCP3008"]
+	path = libraries/Adafruit_MCP3008
+	url = https://github.com/adafruit/Adafruit_MCP3008.git
