@@ -25,11 +25,75 @@ typedef struct
     int sensor_b; // position in 16 sensor sample arrays
     int a_thresh; // threshold for pallete detection
     int b_thresh;
-}nozzle;
+} nozzle;
 //nozzle n0, n1, n2, n3, n4;
 
+nozzle n0{0, {0, 1, 2, 3}, 0, 1, 120, 120};
+nozzle n1{1, {4, 5, 6, 7}, 2, 3, 120, 120};
+nozzle n2{2, {8, 9, 10, 11}, 4, 5, 120, 120};
+nozzle n3{3, {12, 13, 14, 15}, 6, 7, 120, 120};
+nozzle n4{4, {16, 17, 18, 19}, 8, 9, 120, 120};
 
+// n0.pos = 0;
+// n0.leds[0] = 0;
+// n0.leds[1] = 1;
+// n0.leds[2] = 2;
+// n0.leds[3] = 3;
+// // TODO ref pump in n0
+// n0.sensor_a = 0;
+// n0.sensor_b = 1;
+// n0.a_thresh = 120;
+// n0.b_thresh = 120;
 
+// nozzle n1;
+// n1.pos = 1;
+// n1.leds[0] = 4;
+// n1.leds[1] = 5;
+// n1.leds[2] = 6;
+// n1.leds[3] = 7;
+// // TODO ref pump in n0
+// n1.sensor_a = 2;
+// n1.sensor_b = 3;
+// n1.a_thresh = 120;
+// n1.b_thresh = 120;
+
+// nozzle n2;
+// n2.pos = 2;
+// n2.leds[0] = 8;
+// n2.leds[1] = 9;
+// n2.leds[2] = 10;
+// n2.leds[3] = 11;
+// // TODO ref pump in n0
+// n2.sensor_a = 4;
+// n2.sensor_b = 5;
+// n2.a_thresh = 120;
+// n2.b_thresh = 120;
+
+// nozzle n3;
+// n3.pos = 3;
+// n3.leds[0] = 12;
+// n3.leds[1] = 13;
+// n3.leds[2] = 14;
+// n3.leds[3] = 15;
+// // TODO ref pump in n0
+// n3.sensor_a = 6;
+// n3.sensor_b = 7;
+// n3.a_thresh = 120;
+// n3.b_thresh = 120;
+
+// nozzle n4;
+// n4.pos = 4;
+// n4.leds[0] = 16;
+// n4.leds[1] = 17;
+// n4.leds[2] = 18;
+// n4.leds[3] = 19;
+// // TODO ref pump in n0
+// n4.sensor_a = 8;
+// n4.sensor_b = 9;
+// n4.a_thresh = 120;
+// n4.b_thresh = 120;
+
+nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 
 // prototypes
 void sort(int arr[], int size);
@@ -38,53 +102,7 @@ bool detect(int sensor_pin, int threshold);
 
 void setup()
 {
-    nozzle n0;
-    n0.pos = 0;
-    n0.leds[0] = 0, 1, 2, 3};
-    // TODO ref pump in n0
-    n0.sensor_a = 0;
-    n0.sensor_b = 1;
-    n0.a_thresh = 120;
-    n0.b_thresh = 120;
-    
-    nozzle n1;
-    n1.pos = 1;
-    n1.leds[4] = {4, 5, 6, 7};
-    // TODO ref pump in n0
-    n1.sensor_a = 2;
-    n1.sensor_b = 3;
-    n1.a_thresh = 120;
-    n1.b_thresh = 120;
-    
-    nozzle n2;
-    n2.pos = 2;
-    n2.leds[4] = {8, 9, 10, 11};
-    // TODO ref pump in n0
-    n2.sensor_a = 4;
-    n2.sensor_b = 5;
-    n2.a_thresh = 120;
-    n2.b_thresh = 120;
-    
-    nozzle n3;
-    n3.pos = 3;
-    n3.leds[4] = {12, 13, 14, 15};
-    // TODO ref pump in n0
-    n3.sensor_a = 6;
-    n3.sensor_b = 7;
-    n3.a_thresh = 120;
-    n3.b_thresh = 120;
-    
-    nozzle n4;
-    n4.pos = 4;
-    n4.leds[4] = {16, 17, 18, 19};
-    // TODO ref pump in n0
-    n4.sensor_a = 8;
-    n4.sensor_b = 9;
-    n4.a_thresh = 120;
-    n4.b_thresh = 120;
-    
-    nozzle nozzles[5] = {n0, n1, n2, n3, n4};
-    
+
     Serial.begin(9600);
     while (!Serial)
         ;
