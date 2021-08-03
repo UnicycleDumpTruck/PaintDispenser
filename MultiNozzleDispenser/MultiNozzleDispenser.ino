@@ -9,8 +9,8 @@ samples.
 Adafruit_MCP3008 adc_a;
 Adafruit_MCP3008 adc_b;
 #define NUMBER_OF_SAMPLES 10
-samples[NUMBER_OF_SAMPLES][16];
-current_sample = 0;
+int samples[NUMBER_OF_SAMPLES][16];
+int current_sample = 0;
 
 int count = 0; // Counter for serial monitor to show change between lines
 
@@ -23,7 +23,7 @@ struct nozzle
     // TODO pump obj in nozzle
     int sensor_a; // position in 16 sensor sample arrays
     int sensor_b; // position in 16 sensor sample arrays
-}
+};
 
 // prototypes
 
@@ -52,7 +52,7 @@ void loop()
 void readSensors() // replace next set of samples with fresh read
 {
     Serial.println(current_sample);
-    sample = 0;
+    int sample = 0;
     for (int chan = 0; chan < 8; chan++)
     {
         samples[current_sample][sample] = adc_a.readADC(chan);
@@ -65,7 +65,7 @@ void readSensors() // replace next set of samples with fresh read
         Serial.print(adc_b.readADC(chan));
         Serial.print("\t");
     }
-    if (current_sample < NUMBER_OF_SAMPLES)
+    if (current_sample < (NUMBER_OF_SAMPLES - 1))
     {
         current_sample++;
     }
