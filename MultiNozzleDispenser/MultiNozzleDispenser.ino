@@ -9,8 +9,8 @@ samples.
 Adafruit_MCP3008 adc_a;
 Adafruit_MCP3008 adc_b;
 #define NUMBER_OF_SAMPLES 10
-samples[NUMBER_OF_SAMPLES][16];
-current_sample = 0;
+int samples[NUMBER_OF_SAMPLES][16];
+int current_sample = 0;
 
 int count = 0; // Counter for serial monitor to show change between lines
 
@@ -25,7 +25,7 @@ struct nozzle
     int sensor_b; // position in 16 sensor sample arrays
 } n0, n1, n2, n3, n4;
 
-nozzles[] = [ n0, n1, n2, n3, n4 ];
+struct nozzle nozzles[5] = { n0, n1, n2, n3, n4 };
 
 n0.position = 0;
 n0.leds[] = [ 0, 1, 2, 3 ];
