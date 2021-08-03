@@ -11,6 +11,7 @@ a struct for each nozzle, and a 2D array of sensor
 samples.
 ****************************************************/
 
+#include <Adafruit_SleepyDog.h>
 #include <Adafruit_MCP3008.h>
 
 Adafruit_MCP3008 adc_a;
@@ -72,8 +73,9 @@ void setup()
     while (!Serial)
         ;
     delay(1000);
-    Serial.println("Multi-Nozzle Test");
-
+    Serial.println("Multi-Nozzle Paint Dispenser");
+    Watchdog.enable(4000);
+    Serial.println("Watchdog enabled.");
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
     adc_b.begin(6);
@@ -97,6 +99,7 @@ void loop()
         }
     }
     delay(100);
+    Watchdog.reset();
 }
 
 // ███████╗ ██████╗ ██████╗ ████████╗
