@@ -15,11 +15,17 @@
 
 #include <JrkG2.h>
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_MCP3008.h>
 
 #define DEBUG true // Comment out this line to disable Serial.print statements
 
 // Comment out following line to stop dispense if palette withdrawn
 //#define KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN true
+
+Adafruit_MCP3008 adc_a;
+Adafruit_MCP3008 adc_b;
+
+int count = 0;
 
 #define NUMBER_OF_SAMPLES 10 // Loop is delayed by at 2 * NUMBER_OF_SAMPLES millis
 #define LEFT_SENSOR_PIN A1
@@ -74,7 +80,9 @@ void ledRed();
 // ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
 void setup()
 {
-  Wire.begin(); // Set up I2C.
+  Wire.begin();   // Set up I2C.
+  adc_a.begin(5); // Start the upper ADC with hardware SPI and CS on pin 5
+  adc_b.begin(6); // Start the upper ADC with hardware SPI and CS on pin 6
 #ifdef DEBUG
   Serial.begin(115200); // Commence Serial communication
 #endif
