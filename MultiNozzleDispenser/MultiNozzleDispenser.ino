@@ -23,12 +23,14 @@ struct nozzle
     // TODO pump obj in nozzle
     int sensor_a; // position in 16 sensor sample arrays
     int sensor_b; // position in 16 sensor sample arrays
+    int a_thresh; // threshold for pallete detection
+    int b_thresh;
 } n0, n1, n2, n3, n4;
 
-struct nozzle nozzles[5] = { n0, n1, n2, n3, n4 };
+struct nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 
 n0.position = 0;
-n0.leds[] = [ 0, 1, 2, 3 ];
+n0.leds[] = {0, 1, 2, 3};
 // TODO ref pump in n0
 n0.sensor_a = 0;
 n0.sensor_b = 1;
@@ -36,7 +38,7 @@ n0.a_thresh = 120;
 n0.b_thresh = 120;
 
 n1.position = 0;
-n1.leds[] = [ 4, 5, 6, 7 ];
+n1.leds[] = {4, 5, 6, 7};
 // TODO ref pump in n0
 n1.sensor_a = 2;
 n1.sensor_b = 3;
@@ -44,7 +46,7 @@ n1.a_thresh = 120;
 n1.b_thresh = 120;
 
 n2.position = 0;
-n2.leds[] = [ 8, 9, 10, 11 ];
+n2.leds[] = {8, 9, 10, 11};
 // TODO ref pump in n0
 n2.sensor_a = 4;
 n2.sensor_b = 5;
@@ -52,7 +54,7 @@ n2.a_thresh = 120;
 n2.b_thresh = 120;
 
 n3.position = 0;
-n3.leds[] = [ 12, 13, 14, 15 ];
+n3.leds[] = {12, 13, 14, 15};
 // TODO ref pump in n0
 n3.sensor_a = 6;
 n3.sensor_b = 7;
@@ -60,7 +62,7 @@ n3.a_thresh = 120;
 n3.b_thresh = 120;
 
 n4.position = 0;
-n4.leds[] = [ 16, 17, 18, 19 ];
+n4.leds[] = {16, 17, 18, 19};
 // TODO ref pump in n0
 n4.sensor_a = 8;
 n4.sensor_b = 9;
