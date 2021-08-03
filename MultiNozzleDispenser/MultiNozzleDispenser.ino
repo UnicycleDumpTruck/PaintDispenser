@@ -150,19 +150,19 @@ void sort(int arr[], int size)
 
 void readSensors() // replace next set of samples with fresh read
 {
-    Serial.println(current_sample);
+    //Serial.println(current_sample);
     int sample = 0;
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_a.readADC(chan);
-        //Serial.print(samples[current_sample][sample]);
-        //Serial.print("\t");
+        Serial.print(all_samples[current_sample][sample]);
+        Serial.print("\t");
     }
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_b.readADC(chan);
-        //Serial.print(adc_b.readADC(chan));
-        //Serial.print("\t");
+        Serial.print(all_samples[current_sample][sample]);
+        Serial.print("\t");
     }
     if (current_sample < NUMBER_OF_SAMPLES)
     {
@@ -173,10 +173,10 @@ void readSensors() // replace next set of samples with fresh read
         current_sample = 0;
     }
 
-    //Serial.print("[");
-    //Serial.print(count);
-    //Serial.println("]");
-    //count++;
+    Serial.print("[");
+    Serial.print(count);
+    Serial.println("]");
+    count++;
 }
 
 bool detect(int sensor_pin, int threshold)
