@@ -40,11 +40,11 @@ typedef struct
     int b_thresh;
 } nozzle;
 
-nozzle n0{0, {0, 1, 2, 3}, 0, 1, 120, 120};
-nozzle n1{1, {4, 5, 6, 7}, 2, 3, 120, 120};
-nozzle n2{2, {8, 9, 10, 11}, 4, 5, 120, 120};
-nozzle n3{3, {12, 13, 14, 15}, 6, 7, 120, 120};
-nozzle n4{4, {16, 17, 18, 19}, 8, 9, 120, 120};
+nozzle n0{0, {0, 1, 2, 3}, 6, 7, 130, 130}; // Rightmost, from rear view
+nozzle n1{1, {4, 5, 6, 7}, 8, 9, 130, 130};
+nozzle n2{2, {8, 9, 10, 11}, 10, 11, 130, 130};
+nozzle n3{3, {12, 13, 14, 15}, 12, 13, 130, 130};
+nozzle n4{4, {16, 17, 18, 19}, 14, 15, 130, 130}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 
@@ -95,10 +95,11 @@ void loop()
     {
         if (detect(nozzles[nozzle].sensor_a, nozzles[nozzle].a_thresh) && detect(nozzles[nozzle].sensor_b, nozzles[nozzle].b_thresh))
         {
+            Serial.print("====================================================");
             Serial.println(nozzles[nozzle].pos);
         }
     }
-    delay(100);
+    delay(10);
     Watchdog.reset();
 }
 
@@ -144,14 +145,16 @@ void readSensors() // replace next set of samples with fresh read
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_a.readADC(chan);
-        Serial.print(all_samples[current_sample][sample]);
-        Serial.print("\t");
+        // Serial.print(all_samples[current_sample][sample]);
+        // Serial.print("\t");
+        sample++;
     }
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_b.readADC(chan);
-        Serial.print(all_samples[current_sample][sample]);
-        Serial.print("\t");
+        // Serial.print(all_samples[current_sample][sample]);
+        // Serial.print("\t");
+        sample++;
     }
     if (current_sample < NUMBER_OF_SAMPLES)
     {
@@ -162,10 +165,10 @@ void readSensors() // replace next set of samples with fresh read
         current_sample = 0;
     }
 
-    Serial.print("[");
-    Serial.print(count);
-    Serial.println("]");
-    count++;
+    //Serial.print("[");
+    //Serial.print(count);
+    //Serial.println("]");
+    //count++;
 }
 
 // ██████╗ ███████╗████████╗███████╗ ██████╗████████╗
@@ -175,14 +178,13 @@ void readSensors() // replace next set of samples with fresh read
 // ██████╔╝███████╗   ██║   ███████╗╚██████╗   ██║
 // ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝
 
-bool detect(int sensor_pin, int threshold)
+bool detect(int sample_pos, int threshold)
 { // Read a sensor, return true if it's over the threshold
     int samples[NUMBER_OF_SAMPLES];
 
     for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
-        samples[i] = analogRead(sensor_pin);
-        delay(1);
+        samples[i] = all_samples[i][sample_pos];
     }
 
     sort(samples, NUMBER_OF_SAMPLES);
