@@ -36,4 +36,5 @@ arduino_secrets.h
 secrets.h
 
 # VS Code Configurations
-.vscode/
+.vscode/*
+settings.json
