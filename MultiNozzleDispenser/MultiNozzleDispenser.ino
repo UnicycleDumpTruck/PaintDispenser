@@ -170,18 +170,22 @@ void loop()
     // Read sensors, start dispense if necessary, end if palette withdrawn early:
 
     readSensors();
-    for (int nozzle = 0; nozzle < 5; nozzle++)
+    if (!engaged_nozzle) // if not engaged, check for new detects
     {
-        if (detectNozzle(&nozzles[nozzle]))
+        for (int nozzle = 0; nozzle < 5; nozzle++)
         {
-            engaged_nozzle = &nozzles[nozzle];
-            Serial.print("============Detected and Engaged==============");
-            Serial.println(engaged_nozzle->pos);
-            break; // Don't check the other nozzles
+            if (detectNozzle(&nozzles[nozzle]))
+            {
+                engaged_nozzle = &nozzles[nozzle];
+                Serial.print("============Detected and Engaged==============");
+                Serial.println(engaged_nozzle->pos);
+                break; // Don't check the other nozzles
+            }
         }
     }
-
-    if (engaged_nozzle)
+    else // if we are engaged with a nozzle
+    {
+    if (detectNozzle(engaged_nozzle))
     { // palette now present
         if (palette_clear)
         { // Palette was not previously present
@@ -209,6 +213,7 @@ void loop()
 #ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
             endDispense(engaged_nozzle->jrk);
 #endif
+            engaged_nozzle = NULL;
         }
 
         if (red_leader < 0)
@@ -221,7 +226,7 @@ void loop()
         Serial.println("Palette gone");
         led_goal = SOLID_GREEN;
     }
-
+    }
     delay(100);
 
     Watchdog.reset();
