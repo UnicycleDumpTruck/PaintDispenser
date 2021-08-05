@@ -185,47 +185,47 @@ void loop()
     }
     else // if we are engaged with a nozzle
     {
-    if (detectNozzle(engaged_nozzle))
-    { // palette now present
-        if (palette_clear)
-        { // Palette was not previously present
-            palette_clear = false;
-            Serial.println("Palette appeared");
-            led_goal = SOLID_RED;
-        }
-        else
-        { // Palette still there from previous dispense
-            Serial.println("hanging around");
-            if ((red_leader == LED_COUNT) && not_dispensed)
-            {
-                not_dispensed = false;
-                //ledRed();
-                //dispense();
-                beginDispense(engaged_nozzle->jrk);
+        if (detectNozzle(engaged_nozzle)) // if that nozzle still detects
+        {                                 // palette now present
+            if (palette_clear)
+            { // Palette was not previously present
+                palette_clear = false;
+                Serial.println("Palette appeared");
+                led_goal = SOLID_RED;
+            }
+            else
+            { // Palette still there from previous dispense
+                Serial.println("hanging around");
+                if ((red_leader == LED_COUNT) && not_dispensed)
+                {
+                    not_dispensed = false;
+                    //ledRed();
+                    //dispense();
+                    Serial.println("++++++++++++++++++++++++ Dispensing ++++++++++++++++++++++++");
+                    beginDispense(engaged_nozzle->jrk);
+                }
             }
         }
-    }
-    else
-    {                   // palette absent
-        if (dispensing) // Palette was withdrawn (or sensor error) while dispensing
-        {
-            Serial.println("Palette disappeard prematurely");
+        else                // if engaged no longer detects
+        {                   // palette absent
+            if (dispensing) // Palette was withdrawn (or sensor error) while dispensing
+            {
+                Serial.println("Palette disappeard prematurely");
 #ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
-            endDispense(engaged_nozzle->jrk);
+                endDispense(engaged_nozzle->jrk);
 #endif
+                        }
+
+            if (red_leader < 0)
+            { // been empty long enough to allow new dispense event
+                not_dispensed = true;
+                //ledGreen();
+            }
             engaged_nozzle = NULL;
+            palette_clear = true;
+            Serial.println("Palette gone");
+            led_goal = SOLID_GREEN;
         }
-
-        if (red_leader < 0)
-        { // been empty long enough to allow new dispense event
-            not_dispensed = true;
-            //ledGreen();
-        }
-
-        palette_clear = true;
-        Serial.println("Palette gone");
-        led_goal = SOLID_GREEN;
-    }
     }
     delay(100);
 
