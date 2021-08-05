@@ -13,6 +13,8 @@ samples.
 
 #include <Adafruit_SleepyDog.h>
 #include <Adafruit_MCP3008.h>
+#include <JrkG2.h>
+#include <Adafruit_NeoPixel.h>
 
 Adafruit_MCP3008 adc_a;
 Adafruit_MCP3008 adc_b;
@@ -21,6 +23,44 @@ int all_samples[NUMBER_OF_SAMPLES][16];
 int current_sample = 0;
 
 int count = 0; // Counter for serial monitor to show change between lines
+
+// Possible states for main loop:
+#define IDLE 0
+#define DETECTED 1
+#define DISPENSING 2
+int state = IDLE;
+
+// Motor Speeds
+#define DISPENSE_DURATION 2000
+#define DISPENSE_SPEED 1448
+#define STOP_SPEED 2048
+
+// LED Constants
+#define LED_PIN 9
+#define LED_COUNT 13        // 13 leds on prototype housing
+#define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
+#define FILL_DELAY 0        // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 0      // Minimum delay between leds after dispense. Sensor sampling also delays.
+#define SOLID_GREEN 1
+#define SOLID_RED 2
+
+unsigned long prev_led_change_millis = 0; // When the last LED change occurred.
+int red_leader = -1;                      // Position of the lowest red LED.
+int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the current state.
+
+// Full Strip of NeoPixels, to be broken up
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+JrkG2I2C jrk0(11);                       // Pololu motor controller
+JrkG2I2C jrk1(12);                       // Pololu motor controller
+JrkG2I2C jrk2(13);                       // Pololu motor controller
+JrkG2I2C jrk3(14);                       // Pololu motor controller
+JrkG2I2C jrk4(15);                       // Pololu motor controller
+unsigned long dispense_begin_millis = 0; // When the motor began dispensing Paint
+bool dispensing = false;
+
+bool palette_clear = false;
+bool not_dispensed = true;
 
 // ███████╗████████╗██████╗ ██╗   ██╗ ██████╗████████╗██╗   ██╗██████╗ ███████╗███████╗
 // ██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║   ██║██╔══██╗██╔════╝██╔════╝
@@ -33,20 +73,21 @@ typedef struct
 {
     int pos;
     int leds[4];
-    // TODO pump obj in nozzle
+    JrkG2I2C jrk;
     int sensor_a; // position in 16 sensor sample arrays
     int sensor_b; // position in 16 sensor sample arrays
     int a_thresh; // threshold for pallete detection
     int b_thresh;
 } nozzle;
 
-nozzle n0{0, {0, 1, 2, 3}, 6, 7, 130, 130}; // Rightmost, from rear view
-nozzle n1{1, {4, 5, 6, 7}, 8, 9, 130, 130};
-nozzle n2{2, {8, 9, 10, 11}, 10, 11, 130, 130};
-nozzle n3{3, {12, 13, 14, 15}, 12, 13, 130, 130};
-nozzle n4{4, {16, 17, 18, 19}, 14, 15, 130, 130}; // Leftmost, from rear view
+nozzle n0{0, {0, 1, 2, 3}, jrk0, 6, 7, 130, 130}; // Rightmost, from rear view
+nozzle n1{1, {4, 5, 6, 7}, jrk1, 8, 9, 130, 130};
+nozzle n2{2, {8, 9, 10, 11}, jrk2, 10, 11, 130, 130};
+nozzle n3{3, {12, 13, 14, 15}, jrk3, 12, 13, 130, 130};
+nozzle n4{4, {16, 17, 18, 19}, jrk4, 14, 15, 130, 130}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
+nozzle *engaged_nozzle = &n0; // Point to something, so we don't get weird.
 
 //  ██████╗ ██████╗  ██████╗ ████████╗ ██████╗ ████████╗██╗   ██╗██████╗ ███████╗███████╗
 // ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔════╝
@@ -58,6 +99,10 @@ nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 void sort(int arr[], int size);
 void readSensors();
 bool detect(int sensor_pin, int threshold);
+void beginDispense(JrkG2I2C jrk);
+void endDispense(JrkG2I2C jrk);
+void ledGreen();
+void ledRed();
 
 // ███████╗███████╗████████╗██╗   ██╗██████╗
 // ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
@@ -90,16 +135,110 @@ void setup()
 
 void loop()
 {
-    readSensors();
-    for (int nozzle = 0; nozzle < 5; nozzle++)
+    if (state == IDLE)
     {
-        if (detect(nozzles[nozzle].sensor_a, nozzles[nozzle].a_thresh) && detect(nozzles[nozzle].sensor_b, nozzles[nozzle].b_thresh))
+        readSensors();
+        for (int nozzle = 0; nozzle < 5; nozzle++)
         {
-            Serial.print("====================================================");
-            Serial.println(nozzles[nozzle].pos);
+            if (detect(nozzles[nozzle].sensor_a, nozzles[nozzle].a_thresh) && detect(nozzles[nozzle].sensor_b, nozzles[nozzle].b_thresh))
+            {
+                Serial.print("====================================================");
+                Serial.println(nozzles[nozzle].pos);
+            }
+        }
+        delay(10);
+    } // end idle
+    else if (state == DETECTED)
+    {
+        // Manage LED chain:
+        if ((led_goal == SOLID_GREEN) && red_leader > -1)
+        { // If our goal is green, but we aren't fully green yet
+            if ((millis() - prev_led_change_millis) > UNFILL_DELAY)
+            { // if we have waited long enough since the last led change
+                strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0);
+                strip.show();
+                red_leader--; // Decrement after led change
+                prev_led_change_millis = millis();
+            }
+        }
+        else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT)
+        { // if our goal is red, but we aren't fully red yet
+            if ((millis() - prev_led_change_millis) > FILL_DELAY)
+            {                 // if we have waited long enough since the last led change
+                red_leader++; // Increment before led change
+                strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0);
+                strip.show();
+                prev_led_change_millis = millis();
+            }
+        } // else we have achieved our led goal
+
+        // Read sensors, start dispense if necessary, end if palette withdrawn early:
+        bool leftDetect = detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD);
+        bool rightDetect = detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD);
+        if (leftDetect && rightDetect)
+        { // palette now present
+            if (palette_clear)
+            { // Palette was not previously present
+                palette_clear = false;
+#ifdef DEBUG
+                //Serial.println("Palette appeared");
+#endif
+                led_goal = SOLID_RED;
+            }
+            else
+            { // Palette still there from previous dispense
+#ifdef DEBUG
+                //Serial.println("hanging around");
+#endif
+                if ((red_leader == LED_COUNT) && not_dispensed)
+                {
+                    not_dispensed = false;
+                    //ledRed();
+                    //dispense();
+                    beginDispense();
+                }
+            }
+        }
+        else
+        {                   // palette absent
+            if (dispensing) // Palette was withdrawn (or sensor error) while dispensing
+            {
+#ifdef DEBUG
+                Serial.println("Palette disappeard prematurely");
+#endif
+#ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
+                endDispense();
+#endif
+            }
+
+            if (red_leader < 0)
+            { // been empty long enough to allow new dispense event
+                not_dispensed = true;
+                //ledGreen();
+            }
+
+            palette_clear = true;
+#ifdef DEBUG
+            //Serial.println("Palette gone");
+#endif
+            led_goal = SOLID_GREEN;
         }
     }
-    delay(10);
+    else if (state == DISPENSING)
+    {
+        // End dispensing if DISPENSE_DURATION has elapsed:
+        if ((millis() - dispense_begin_millis) > DISPENSE_DURATION)
+        {
+            Serial.println("Duration elapsed");
+            endDispense();
+            // TODO set LEDs back to normal
+            state = IDLE;
+        }
+    }
+    else
+    {
+        state = IDLE;
+    }
     Watchdog.reset();
 }
 
@@ -187,30 +326,65 @@ bool detect(int sample_pos, int threshold)
         samples[i] = all_samples[i][sample_pos];
     }
 
-    sort(samples, NUMBER_OF_SAMPLES);
-    int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))];
-
-#ifdef DEBUG
-    if (sensor_pin == LEFT_SENSOR_PIN)
-    {
-        Serial.print(sensor_pin);
-        Serial.print("  ");
-        Serial.print(medianReading);
-        Serial.print("  ");
-    }
-    else if (sensor_pin == RIGHT_SENSOR_PIN)
-    {
-        Serial.print(sensor_pin);
-        Serial.print("  ");
-        Serial.println(medianReading);
-    }
-#endif
+    sort(samples, NUMBER_OF_SAMPLES);                            // put samples into order
+    int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))]; // choose middle-ish sample
 
     if (medianReading > threshold)
     {
         return true;
     }
     return false;
+}
+
+// ██████╗ ██╗███████╗██████╗ ███████╗███╗   ██╗███████╗███████╗
+// ██╔══██╗██║██╔════╝██╔══██╗██╔════╝████╗  ██║██╔════╝██╔════╝
+// ██║  ██║██║███████╗██████╔╝█████╗  ██╔██╗ ██║███████╗█████╗
+// ██║  ██║██║╚════██║██╔═══╝ ██╔══╝  ██║╚██╗██║╚════██║██╔══╝
+// ██████╔╝██║███████║██║     ███████╗██║ ╚████║███████║███████╗
+// ╚═════╝ ╚═╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═══╝╚══════╝╚══════╝
+
+void beginDispense(JrkG2I2C jrk)
+{ // Start pump motor
+#ifdef DEBUG
+    Serial.println("Beginning Dispense");
+#endif
+    dispensing = true;
+    dispense_begin_millis = millis();
+    jrk.setTarget(DISPENSE_SPEED);
+}
+
+void endDispense(JrkG2I2C jrk)
+{ // Stop pump motor
+#ifdef DEBUG
+    Serial.println("Ending Dispense");
+#endif
+    dispensing = false;
+    jrk.setTarget(STOP_SPEED);
+}
+
+// ██╗     ███████╗██████╗
+// ██║     ██╔════╝██╔══██╗
+// ██║     █████╗  ██║  ██║
+// ██║     ██╔══╝  ██║  ██║
+// ███████╗███████╗██████╔╝
+// ╚══════╝╚══════╝╚═════╝
+
+void ledGreen()
+{ // Light strip full green, no delays
+    for (int i = LED_COUNT; i >= 0; i--)
+    {
+        strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0);
+        strip.show();
+    }
+}
+
+void ledRed()
+{ // Light strip full red, no delays
+    for (int i = 0; i < LED_COUNT; i++)
+    {
+        strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
+        strip.show();
+    }
 }
 
 // ███████╗███╗   ██╗██████╗
