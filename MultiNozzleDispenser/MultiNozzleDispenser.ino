@@ -87,7 +87,7 @@ nozzle n3{3, {12, 13, 14, 15}, jrk3, 12, 13, 130, 130};
 nozzle n4{4, {16, 17, 18, 19}, jrk4, 14, 15, 130, 130}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
-nozzle *engaged_nozzle = &n0; // Point to something, so we don't get weird.
+nozzle *engaged_nozzle = NULL; // Point to something, so we don't get weird.
 
 //  ██████╗ ██████╗  ██████╗ ████████╗ ██████╗ ████████╗██╗   ██╗██████╗ ███████╗███████╗
 // ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔════╝
@@ -136,111 +136,94 @@ void setup()
 
 void loop()
 {
-    if (state == IDLE)
+    // End dispensing if DISPENSE_DURATION has elapsed:
+    if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
     {
-        readSensors();
-        for (int nozzle = 0; nozzle < 5; nozzle++)
-        {
-            if (detectNozzle(&nozzles[nozzle]))
-            {
-                engaged_nozzle = & nozzles[nozzle];
-                Serial.print("====================================================");
-                Serial.println(engaged_nozzle->pos);
-                state = DETECTED;
-            }
-        }
-        delay(10);
-    } // end idle
-    else if (state == DETECTED)
-    {
-        // Manage LED chain:
-        if ((led_goal == SOLID_GREEN) && red_leader > -1)
-        { // If our goal is green, but we aren't fully green yet
-            if ((millis() - prev_led_change_millis) > UNFILL_DELAY)
-            { // if we have waited long enough since the last led change
-                strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0);
-                strip.show();
-                red_leader--; // Decrement after led change
-                prev_led_change_millis = millis();
-            }
-        }
-        else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT)
-        { // if our goal is red, but we aren't fully red yet
-            if ((millis() - prev_led_change_millis) > FILL_DELAY)
-            {                 // if we have waited long enough since the last led change
-                red_leader++; // Increment before led change
-                strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0);
-                strip.show();
-                prev_led_change_millis = millis();
-            }
-        } // else we have achieved our led goal
+        Serial.println("Duration elapsed");
+        endDispense(engaged_nozzle->jrk);
+        // TODO return LED strip to idle???
+        engaged_nozzle = NULL;
+    }
 
-        // Read sensors, start dispense if necessary, end if palette withdrawn early:
-        readSensors();
-        if (detectNozzle(engaged_nozzle))
-        { // palette now present
-            if (palette_clear)
-            { // Palette was not previously present
-                palette_clear = false;
-#ifdef DEBUG
-                //Serial.println("Palette appeared");
-#endif
-                led_goal = SOLID_RED;
-            }
-            else
-            { // Palette still there from previous dispense
-#ifdef DEBUG
-                //Serial.println("hanging around");
-#endif
-                if ((red_leader == LED_COUNT) && not_dispensed)
-                {
-                    not_dispensed = false;
-                    //ledRed();
-                    //dispense();
-                    beginDispense(engaged_nozzle->jrk);
-                }
-            }
-        }
-        else
-        {                   // palette absent
-            if (dispensing) // Palette was withdrawn (or sensor error) while dispensing
-            {
-#ifdef DEBUG
-                Serial.println("Palette disappeard prematurely");
-#endif
-#ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
-                endDispense();
-#endif
-            }
-
-            if (red_leader < 0)
-            { // been empty long enough to allow new dispense event
-                not_dispensed = true;
-                //ledGreen();
-            }
-
-            palette_clear = true;
-#ifdef DEBUG
-            //Serial.println("Palette gone");
-#endif
-            led_goal = SOLID_GREEN;
+    // Manage LED chain:
+    if ((led_goal == SOLID_GREEN) && red_leader > -1)
+    { // If our goal is green, but we aren't fully green yet
+        if ((millis() - prev_led_change_millis) > UNFILL_DELAY)
+        { // if we have waited long enough since the last led change
+            strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0);
+            strip.show();
+            red_leader--; // Decrement after led change
+            prev_led_change_millis = millis();
         }
     }
-    else if (state == DISPENSING)
+    else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT)
+    { // if our goal is red, but we aren't fully red yet
+        if ((millis() - prev_led_change_millis) > FILL_DELAY)
+        {                 // if we have waited long enough since the last led change
+            red_leader++; // Increment before led change
+            strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0);
+            strip.show();
+            prev_led_change_millis = millis();
+        }
+    } // else we have achieved our led goal
+
+    // Read sensors, start dispense if necessary, end if palette withdrawn early:
+
+    readSensors();
+    for (int nozzle = 0; nozzle < 5; nozzle++)
     {
-        // End dispensing if DISPENSE_DURATION has elapsed:
-        if ((millis() - dispense_begin_millis) > DISPENSE_DURATION)
+        if (detectNozzle(&nozzles[nozzle]))
         {
-            Serial.println("Duration elapsed");
-            endDispense(engaged_nozzle->jrk);
-            // TODO set LEDs back to normal
-            state = IDLE;
+            engaged_nozzle = &nozzles[nozzle];
+            Serial.print("============Detected and Engaged==============");
+            Serial.println(engaged_nozzle->pos);
+            break; // Don't check the other nozzles
+        }
+    }
+
+    if (engaged_nozzle)
+    { // palette now present
+        if (palette_clear)
+        { // Palette was not previously present
+            palette_clear = false;
+            //Serial.println("Palette appeared");
+            led_goal = SOLID_RED;
+        }
+        else
+        { // Palette still there from previous dispense
+            //Serial.println("hanging around");
+            if ((red_leader == LED_COUNT) && not_dispensed)
+            {
+                not_dispensed = false;
+                //ledRed();
+                //dispense();
+                beginDispense(engaged_nozzle->jrk);
+            }
         }
     }
     else
-    {
-        state = IDLE;
+    {                   // palette absent
+        if (dispensing) // Palette was withdrawn (or sensor error) while dispensing
+        {
+            Serial.println("Palette disappeard prematurely");
+#ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
+            endDispense(engaged_nozzle->jrk);
+#endif
+        }
+
+        if (red_leader < 0)
+        { // been empty long enough to allow new dispense event
+            not_dispensed = true;
+            //ledGreen();
+        }
+
+        palette_clear = true;
+        //Serial.println("Palette gone");
+        led_goal = SOLID_GREEN;
     }
+
+    delay(10);
+
     Watchdog.reset();
 }
 
