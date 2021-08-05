@@ -139,7 +139,7 @@ void loop()
     // End dispensing if DISPENSE_DURATION has elapsed:
     if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
     {
-        Serial.println("Duration elapsed");
+        Serial.println("Dispense Duration elapsed, stopping pump");
         endDispense(engaged_nozzle->jrk);
         // TODO return LED strip to idle???
         engaged_nozzle = NULL;
@@ -186,12 +186,12 @@ void loop()
         if (palette_clear)
         { // Palette was not previously present
             palette_clear = false;
-            //Serial.println("Palette appeared");
+            Serial.println("Palette appeared");
             led_goal = SOLID_RED;
         }
         else
         { // Palette still there from previous dispense
-            //Serial.println("hanging around");
+            Serial.println("hanging around");
             if ((red_leader == LED_COUNT) && not_dispensed)
             {
                 not_dispensed = false;
@@ -218,11 +218,11 @@ void loop()
         }
 
         palette_clear = true;
-        //Serial.println("Palette gone");
+        Serial.println("Palette gone");
         led_goal = SOLID_GREEN;
     }
 
-    delay(10);
+    delay(100);
 
     Watchdog.reset();
 }
