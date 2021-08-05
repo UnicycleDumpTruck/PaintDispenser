@@ -143,8 +143,10 @@ void loop()
         {
             if (detectNozzle(&nozzles[nozzle]))
             {
+                engaged_nozzle = & nozzles[nozzle];
                 Serial.print("====================================================");
-                Serial.println(nozzles[nozzle].pos);
+                Serial.println(engaged_nozzle->pos);
+                state = DETECTED;
             }
         }
         delay(10);
