@@ -99,6 +99,7 @@ nozzle *engaged_nozzle = &n0; // Point to something, so we don't get weird.
 void sort(int arr[], int size);
 void readSensors();
 bool detect(int sensor_pin, int threshold);
+bool detectNozzle(nozzle *noz);
 void beginDispense(JrkG2I2C jrk);
 void endDispense(JrkG2I2C jrk);
 void ledGreen();
@@ -140,7 +141,7 @@ void loop()
         readSensors();
         for (int nozzle = 0; nozzle < 5; nozzle++)
         {
-            if (detect(nozzles[nozzle].sensor_a, nozzles[nozzle].a_thresh) && detect(nozzles[nozzle].sensor_b, nozzles[nozzle].b_thresh))
+            if (detectNozzle(&nozzles[nozzle]))
             {
                 Serial.print("====================================================");
                 Serial.println(nozzles[nozzle].pos);
@@ -173,9 +174,8 @@ void loop()
         } // else we have achieved our led goal
 
         // Read sensors, start dispense if necessary, end if palette withdrawn early:
-        bool leftDetect = detect(LEFT_SENSOR_PIN, LEFT_SENSOR_THRESHOLD);
-        bool rightDetect = detect(RIGHT_SENSOR_PIN, RIGHT_SENSOR_THRESHOLD);
-        if (leftDetect && rightDetect)
+        readSensors();
+        if (detectNozzle(engaged_nozzle))
         { // palette now present
             if (palette_clear)
             { // Palette was not previously present
@@ -195,7 +195,7 @@ void loop()
                     not_dispensed = false;
                     //ledRed();
                     //dispense();
-                    beginDispense();
+                    beginDispense(engaged_nozzle->jrk);
                 }
             }
         }
@@ -230,7 +230,7 @@ void loop()
         if ((millis() - dispense_begin_millis) > DISPENSE_DURATION)
         {
             Serial.println("Duration elapsed");
-            endDispense();
+            endDispense(engaged_nozzle->jrk);
             // TODO set LEDs back to normal
             state = IDLE;
         }
@@ -330,6 +330,15 @@ bool detect(int sample_pos, int threshold)
     int medianReading = samples[((int)(NUMBER_OF_SAMPLES / 2))]; // choose middle-ish sample
 
     if (medianReading > threshold)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool detectNozzle(nozzle *noz)
+{
+    if (detect(noz->sensor_a, noz->a_thresh) && detect(noz->sensor_b, noz->b_thresh))
     {
         return true;
     }
