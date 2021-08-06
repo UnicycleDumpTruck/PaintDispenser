@@ -202,7 +202,7 @@ void loop()
                 }
                 else
                 {
-                    Serial.println("post-dispense")
+                    Serial.println("post-dispense");
                 }
                 if ((red_leader == LED_COUNT) && not_dispensed)
                 {
@@ -283,15 +283,15 @@ void readSensors() // replace next set of samples with fresh read
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_a.readADC(chan);
-        Serial.print(all_samples[current_sample][sample]);
-        Serial.print("\t");
+        // Serial.print(all_samples[current_sample][sample]);
+        // Serial.print("\t");
         sample++;
     }
     for (int chan = 0; chan < 8; chan++)
     {
         all_samples[current_sample][sample] = adc_b.readADC(chan);
-        Serial.print(all_samples[current_sample][sample]);
-        Serial.print("\t");
+        // Serial.print(all_samples[current_sample][sample]);
+        // Serial.print("\t");
         sample++;
     }
     if (current_sample < NUMBER_OF_SAMPLES)
@@ -303,9 +303,9 @@ void readSensors() // replace next set of samples with fresh read
         current_sample = 0;
     }
 
-    Serial.print("[");
-    Serial.print(count);
-    Serial.println("]");
+    // Serial.print("[");
+    // Serial.print(count);
+    // Serial.println("]");
     count++;
 }
 
