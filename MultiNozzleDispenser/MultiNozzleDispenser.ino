@@ -24,11 +24,11 @@ int current_sample = 0;
 
 int count = 0; // Counter for serial monitor to show change between lines
 
-// Possible states for main loop:
-#define IDLE 0
-#define DETECTED 1
-#define DISPENSING 2
-int state = IDLE;
+// // Possible states for main loop:
+// #define IDLE 0
+// #define DETECTED 1
+// #define DISPENSING 2
+// int state = IDLE;
 
 // Motor Speeds
 #define DISPENSE_DURATION 2000
@@ -37,10 +37,10 @@ int state = IDLE;
 
 // LED Constants
 #define LED_PIN 9
-#define LED_COUNT 13        // 13 leds on prototype housing
+#define LED_COUNT 8        // 13 leds on prototype housing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
-#define FILL_DELAY 0        // Minimum delay between leds before dispense. Sensor sampling also delays.
-#define UNFILL_DELAY 0      // Minimum delay between leds after dispense. Sensor sampling also delays.
+#define FILL_DELAY 100        // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 50      // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -125,6 +125,9 @@ void setup()
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
     adc_b.begin(6);
+    strip.begin(); // Start the NeoPixel strip
+    ledGreen();
+
 }
 
 // ██╗      ██████╗  ██████╗ ██████╗
@@ -140,7 +143,7 @@ void loop()
     if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
     {
         Serial.println("Dispense Duration elapsed, stopping pump");
-        delay(2000); // Hold it so we can see in the serial monitor
+        //delay(2000); // Hold it so we can see in the serial monitor
         endDispense(engaged_nozzle->jrk);
         // TODO return LED strip to idle???
         // engaged_nozzle = NULL;
@@ -173,6 +176,15 @@ void loop()
     readSensors();
     if (engaged_nozzle == NULL) // if not engaged, check for new detects
     {
+        if (red_leader < 0)
+        { // been empty long enough to allow new dispense event
+            not_dispensed = true;
+            //ledGreen();
+        }
+        palette_clear = true;
+        //Serial.println("Palette gone from not engaged");
+
+
         for (int nozzle = 0; nozzle < 5; nozzle++)
         {
             if (detectNozzle(&nozzles[nozzle]))
@@ -196,21 +208,21 @@ void loop()
             }
             else
             { // Palette still there from previous dispense
-                if (not_dispensed)
-                {
-                    Serial.println("present predispense");
-                }
-                else
-                {
-                    Serial.println("post-dispense");
-                }
+                // if (not_dispensed)
+                // {
+                //     Serial.println("present predispense");
+                // }
+                // else
+                // {
+                //     Serial.println("post-dispense");
+                // }
                 if ((red_leader == LED_COUNT) && not_dispensed)
                 {
                     not_dispensed = false;
                     //ledRed();
                     //dispense();
                     Serial.println("++++++++++++++++++++++++ Dispensing ++++++++++++++++++++++++");
-                    delay(2000);
+                    //delay(2000);
                     beginDispense(engaged_nozzle->jrk);
                 }
             }
@@ -224,7 +236,8 @@ void loop()
                 endDispense(engaged_nozzle->jrk);
 #endif
             }
-
+            // Serial.print("Red Leader: ");
+            // Serial.println(red_leader);
             if (red_leader < 0)
             { // been empty long enough to allow new dispense event
                 not_dispensed = true;
@@ -236,7 +249,7 @@ void loop()
             led_goal = SOLID_GREEN;
         }
     }
-    delay(100);
+    delay(5);
 
     Watchdog.reset();
 }
