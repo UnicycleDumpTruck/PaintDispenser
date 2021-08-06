@@ -122,6 +122,8 @@ void setup()
     Serial.println("Multi-Nozzle Paint Dispenser");
     Watchdog.enable(4000);
     Serial.println("Watchdog enabled.");
+    Wire.begin();   // Set up I2C.
+
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
     adc_b.begin(6);
@@ -369,9 +371,20 @@ void beginDispense(JrkG2I2C jrk)
 #ifdef DEBUG
     Serial.println("Beginning Dispense");
 #endif
+    // To be sure only one runs at a time, stop all first
+    jrk0.setTarget(STOP_SPEED);
+    jrk1.setTarget(STOP_SPEED);
+    jrk2.setTarget(STOP_SPEED);
+    jrk3.setTarget(STOP_SPEED);
+    jrk4.setTarget(STOP_SPEED);
     dispensing = true;
     dispense_begin_millis = millis();
+    Serial.print("Speed before set: ");
+    Serial.println(jrk.getTarget());
     jrk.setTarget(DISPENSE_SPEED);
+    Serial.print("Speed after set: ");
+    Serial.println(jrk.getTarget());
+
 }
 
 void endDispense(JrkG2I2C jrk)
@@ -381,6 +394,13 @@ void endDispense(JrkG2I2C jrk)
 #endif
     dispensing = false;
     jrk.setTarget(STOP_SPEED);
+    delay(10);
+    Serial.println("Stopping all in End Dispense");
+    for (int i=0; i<5; i++)
+    {
+        nozzles[i].jrk.setTarget(STOP_SPEED);
+        delay(10);
+    }
 }
 
 // ██╗     ███████╗██████╗
