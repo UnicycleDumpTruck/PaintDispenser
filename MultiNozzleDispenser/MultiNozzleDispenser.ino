@@ -140,6 +140,7 @@ void loop()
     if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
     {
         Serial.println("Dispense Duration elapsed, stopping pump");
+        delay(2000); // Hold it so we can see in the serial monitor
         endDispense(engaged_nozzle->jrk);
         // TODO return LED strip to idle???
         engaged_nozzle = NULL;
@@ -170,14 +171,14 @@ void loop()
     // Read sensors, start dispense if necessary, end if palette withdrawn early:
 
     readSensors();
-    if (!engaged_nozzle) // if not engaged, check for new detects
+    if (engaged_nozzle == NULL) // if not engaged, check for new detects
     {
         for (int nozzle = 0; nozzle < 5; nozzle++)
         {
             if (detectNozzle(&nozzles[nozzle]))
             {
                 engaged_nozzle = &nozzles[nozzle];
-                Serial.print("============Detected and Engaged==============");
+                Serial.print("============Detected and Engaged============== ");
                 Serial.println(engaged_nozzle->pos);
                 break; // Don't check the other nozzles
             }
@@ -195,13 +196,21 @@ void loop()
             }
             else
             { // Palette still there from previous dispense
-                Serial.println("hanging around");
+                if (not_dispensed)
+                {
+                    Serial.println("present predispense");
+                }
+                else
+                {
+                    Serial.println("post-dispense")
+                }
                 if ((red_leader == LED_COUNT) && not_dispensed)
                 {
                     not_dispensed = false;
                     //ledRed();
                     //dispense();
                     Serial.println("++++++++++++++++++++++++ Dispensing ++++++++++++++++++++++++");
+                    delay(2000);
                     beginDispense(engaged_nozzle->jrk);
                 }
             }
@@ -214,7 +223,7 @@ void loop()
 #ifdef KEEP_DISPENSING_IF_PREMATURELY_WITHDRAWN
                 endDispense(engaged_nozzle->jrk);
 #endif
-                        }
+            }
 
             if (red_leader < 0)
             { // been empty long enough to allow new dispense event
