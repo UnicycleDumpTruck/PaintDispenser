@@ -143,7 +143,7 @@ void loop()
         delay(2000); // Hold it so we can see in the serial monitor
         endDispense(engaged_nozzle->jrk);
         // TODO return LED strip to idle???
-        engaged_nozzle = NULL;
+        // engaged_nozzle = NULL;
     }
 
     // Manage LED chain:
