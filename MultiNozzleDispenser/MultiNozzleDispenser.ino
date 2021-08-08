@@ -37,10 +37,10 @@ int count = 0; // Counter for serial monitor to show change between lines
 
 // LED Constants
 #define LED_PIN 9
-#define LED_COUNT 8        // 13 leds on prototype housing
+#define LED_COUNT 8         // 13 leds on prototype housing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
-#define FILL_DELAY 100        // Minimum delay between leds before dispense. Sensor sampling also delays.
-#define UNFILL_DELAY 50      // Minimum delay between leds after dispense. Sensor sampling also delays.
+#define FILL_DELAY 100      // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 50     // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -80,11 +80,11 @@ typedef struct
     int b_thresh;
 } nozzle;
 
-nozzle n0{0, {0, 1, 2, 3}, jrk0, 6, 7, 130, 130}; // Rightmost, from rear view
-nozzle n1{1, {4, 5, 6, 7}, jrk1, 8, 9, 130, 130};
-nozzle n2{2, {8, 9, 10, 11}, jrk2, 10, 11, 130, 130};
-nozzle n3{3, {12, 13, 14, 15}, jrk3, 12, 13, 130, 130};
-nozzle n4{4, {16, 17, 18, 19}, jrk4, 14, 15, 130, 130}; // Leftmost, from rear view
+nozzle n0{0, {0, 1, 2, 3, 4, 5, 6, 7}, jrk0, 6, 7, 130, 130}; // Rightmost, from rear view
+nozzle n1{1, {8, 9, 10, 11, 12, 13, 14, 15}, jrk1, 8, 9, 130, 130};
+nozzle n2{2, {16, 17, 18, 19, 20, 21, 22, 23}, jrk2, 10, 11, 130, 130};
+nozzle n3{3, {24, 25, 26, 27, 28, 29, 30, 31}, jrk3, 12, 13, 130, 130};
+nozzle n4{4, {32, 33, 34, 35, 36, 37, 38, 39}, jrk4, 14, 15, 130, 130}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 nozzle *engaged_nozzle = NULL; // Point to something, so we don't get weird.
@@ -122,14 +122,13 @@ void setup()
     Serial.println("Multi-Nozzle Paint Dispenser");
     Watchdog.enable(4000);
     Serial.println("Watchdog enabled.");
-    Wire.begin();   // Set up I2C.
+    Wire.begin(); // Set up I2C.
 
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
     adc_b.begin(6);
     strip.begin(); // Start the NeoPixel strip
     ledGreen();
-
 }
 
 // ██╗      ██████╗  ██████╗ ██████╗
@@ -156,7 +155,8 @@ void loop()
     { // If our goal is green, but we aren't fully green yet
         if ((millis() - prev_led_change_millis) > UNFILL_DELAY)
         { // if we have waited long enough since the last led change
-            strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0);
+            //strip.setPixelColor(red_leader, 0, PIXEL_BRIGHTNESS, 0); // Set Green
+            strip.setPixelColor(engaged_nozzle->leds[red_leader], 0, PIXEL_BRIGHTNESS, 0); // Set Green
             strip.show();
             red_leader--; // Decrement after led change
             prev_led_change_millis = millis();
@@ -167,7 +167,8 @@ void loop()
         if ((millis() - prev_led_change_millis) > FILL_DELAY)
         {                 // if we have waited long enough since the last led change
             red_leader++; // Increment before led change
-            strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0);
+            //strip.setPixelColor(red_leader, PIXEL_BRIGHTNESS, 0, 0); // Set Red
+            strip.setPixelColor(engaged_nozzle->leds[red_leader], PIXEL_BRIGHTNESS, 0, 0); // Set Red
             strip.show();
             prev_led_change_millis = millis();
         }
@@ -185,7 +186,6 @@ void loop()
         }
         palette_clear = true;
         //Serial.println("Palette gone from not engaged");
-
 
         for (int nozzle = 0; nozzle < 5; nozzle++)
         {
@@ -384,7 +384,6 @@ void beginDispense(JrkG2I2C jrk)
     jrk.setTarget(DISPENSE_SPEED);
     Serial.print("Speed after set: ");
     Serial.println(jrk.getTarget());
-
 }
 
 void endDispense(JrkG2I2C jrk)
@@ -396,7 +395,7 @@ void endDispense(JrkG2I2C jrk)
     jrk.setTarget(STOP_SPEED);
     delay(10);
     Serial.println("Stopping all in End Dispense");
-    for (int i=0; i<5; i++)
+    for (int i = 0; i < 5; i++)
     {
         nozzles[i].jrk.setTarget(STOP_SPEED);
         delay(10);
@@ -418,12 +417,28 @@ void ledGreen()
         strip.show();
     }
 }
+void nozzleLedGreen(int *leds[])
+{ // Light strip full green, no delays
+    for (int i = LED_COUNT; i >= 0; i--)
+    {
+        strip.setPixelColor(leds[i], 0, PIXEL_BRIGHTNESS, 0);
+        strip.show();
+    }
+}
 
 void ledRed()
 { // Light strip full red, no delays
     for (int i = 0; i < LED_COUNT; i++)
     {
         strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
+        strip.show();
+    }
+}
+void nozzleLedRed(int *leds[])
+{ // Light strip full red, no delays
+    for (int i = 0; i < LED_COUNT; i++)
+    {
+        strip.setPixelColor(leds[i], PIXEL_BRIGHTNESS, 0, 0);
         strip.show();
     }
 }
