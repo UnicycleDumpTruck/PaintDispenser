@@ -116,8 +116,8 @@ void setup()
 {
 
     Serial.begin(9600);
-    while (!Serial)
-        ;
+    // while (!Serial)
+    //     ;
     delay(1000);
     Serial.println("Multi-Nozzle Paint Dispenser");
     Watchdog.enable(4000);
