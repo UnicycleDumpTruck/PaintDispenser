@@ -72,7 +72,7 @@ bool not_dispensed = true;
 typedef struct
 {
     int pos;
-    int leds[4];
+    uint16_t leds[8];
     JrkG2I2C jrk;
     int sensor_a; // position in 16 sensor sample arrays
     int sensor_b; // position in 16 sensor sample arrays
@@ -417,14 +417,16 @@ void ledGreen()
         strip.show();
     }
 }
-void nozzleLedGreen(int *leds[])
-{ // Light strip full green, no delays
-    for (int i = LED_COUNT; i >= 0; i--)
-    {
-        strip.setPixelColor(leds[i], 0, PIXEL_BRIGHTNESS, 0);
-        strip.show();
-    }
-}
+
+// NOT COMPILING:
+// void nozzleLedGreen(uint16_t *leds[])
+// { // Light strip full green, no delays
+//     for (int i = LED_COUNT; i >= 0; i--)
+//     {
+//         strip.setPixelColor(leds[i], 0, PIXEL_BRIGHTNESS, 0);
+//         strip.show();
+//     }
+// }
 
 void ledRed()
 { // Light strip full red, no delays
@@ -434,14 +436,16 @@ void ledRed()
         strip.show();
     }
 }
-void nozzleLedRed(int *leds[])
-{ // Light strip full red, no delays
-    for (int i = 0; i < LED_COUNT; i++)
-    {
-        strip.setPixelColor(leds[i], PIXEL_BRIGHTNESS, 0, 0);
-        strip.show();
-    }
-}
+
+// NOT COMPILING
+// void nozzleLedRed(uint16_t *leds[])
+// { // Light strip full red, no delays
+//     for (int i = 0; i < LED_COUNT; i++)
+//     {
+//         strip.setPixelColor(leds[i], PIXEL_BRIGHTNESS, 0, 0);
+//         strip.show();
+//     }
+// }
 
 // ███████╗███╗   ██╗██████╗
 // ██╔════╝████╗  ██║██╔══██╗
