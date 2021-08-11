@@ -14,7 +14,8 @@ samples.
 #include <Adafruit_SleepyDog.h>
 #include <Adafruit_MCP3008.h>
 #include <JrkG2.h>
-#include <Adafruit_NeoPixel.h>
+// #include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPXL8.h>
 
 Adafruit_MCP3008 adc_a;
 Adafruit_MCP3008 adc_b;
@@ -37,7 +38,7 @@ int count = 0; // Counter for serial monitor to show change between lines
 
 // LED Constants
 #define LED_PIN 9
-#define LED_COUNT 8         // 13 leds on prototype housing
+#define LED_COUNT 8         // 8 LEDs per strand to neoPXL8 wing
 #define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
 #define FILL_DELAY 100      // Minimum delay between leds before dispense. Sensor sampling also delays.
 #define UNFILL_DELAY 50     // Minimum delay between leds after dispense. Sensor sampling also delays.
@@ -49,7 +50,9 @@ int red_leader = -1;                      // Position of the lowest red LED.
 int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the current state.
 
 // Full Strip of NeoPixels, to be broken up
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+int8_t pins[8] = {PIN_SERIAL1_RX, PIN_SERIAL1_TX, 9, 6, 13, 12, 11, 10};
+Adafruit_NeoPXL8 strip(LED_COUNT, pins, NEO_GRB + NEO_KHZ800);
 
 JrkG2I2C jrk0(11);                       // Pololu motor controller
 JrkG2I2C jrk1(12);                       // Pololu motor controller
@@ -126,8 +129,15 @@ void setup()
 
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
-    adc_b.begin(6);
-    strip.begin(); // Start the NeoPixel strip
+    adc_b.begin(4);
+    if (strip.begin()) // Start the NeoPixel strip
+    {
+        Serial.println("LED strip memory allocated an initialized successfully.");
+    }
+    else
+    {
+        Serial.println("LED strip FAILED to allocate memory and initialize pins.");
+    }
     ledGreen();
 }
 
