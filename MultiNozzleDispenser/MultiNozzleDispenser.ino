@@ -42,8 +42,8 @@ int count = 0; // Counter for serial monitor to show change between lines
 #define LED_STRAND_SIZE 8
 #define NUM_LED_STRANDS 5
 #define PIXEL_BRIGHTNESS 20
-#define FILL_DELAY 75  // Minimum delay between leds before dispense. Sensor sampling also delays.
-#define UNFILL_DELAY 50 // Minimum delay between leds after dispense. Sensor sampling also delays.
+#define FILL_DELAY 40  // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 40 // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -85,11 +85,11 @@ typedef struct
     int b_thresh;
 } nozzle;
 
-nozzle n0{0, {0, 1, 2, 3, 4, 5, 6, 7}, jrk0, 6, 7, 130, 130}; // Rightmost, from rear view
-nozzle n1{1, {8, 9, 10, 11, 12, 13, 14, 15}, jrk1, 8, 9, 130, 130};
-nozzle n2{2, {16, 17, 18, 19, 20, 21, 22, 23}, jrk2, 10, 11, 130, 130};
+nozzle n0{0, {0, 1, 2, 3, 4, 5, 6, 7}, jrk0, 6, 7, 110, 110}; // Rightmost, from rear view
+nozzle n1{1, {8, 9, 10, 11, 12, 13, 14, 15}, jrk1, 8, 9, 110, 110};
+nozzle n2{2, {16, 17, 18, 19, 20, 21, 22, 23}, jrk2, 10, 11, 110, 110};
 nozzle n3{3, {24, 25, 26, 27, 28, 29, 30, 31}, jrk3, 12, 13, 130, 130};
-nozzle n4{4, {32, 33, 34, 35, 36, 37, 38, 39}, jrk4, 14, 15, 130, 130}; // Leftmost, from rear view
+nozzle n4{4, {32, 33, 34, 35, 36, 37, 38, 39}, jrk4, 14, 15, 110, 110}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
 nozzle *engaged_nozzle = NULL; // Point to something, so we don't get weird.
@@ -222,7 +222,8 @@ void loop()
             if (palette_clear)
             { // Palette was not previously present
                 palette_clear = false;
-                Serial.println("Palette appeared");
+                Serial.print("Palette appeared: ");
+                Serial.println(engaged_nozzle->pos);
                 led_goal = SOLID_RED;
             }
             else
