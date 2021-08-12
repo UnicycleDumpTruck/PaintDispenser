@@ -38,10 +38,10 @@ int count = 0; // Counter for serial monitor to show change between lines
 
 // LED Constants
 // #define LED_PIN 9
-#define LED_COUNT 8         // 8 LEDs per strand to neoPXL8 wing
+#define LED_COUNT 8 // 8 LEDs per strand to neoPXL8 wing
 #define PIXEL_BRIGHTNESS 128
-#define FILL_DELAY 100      // Minimum delay between leds before dispense. Sensor sampling also delays.
-#define UNFILL_DELAY 50     // Minimum delay between leds after dispense. Sensor sampling also delays.
+#define FILL_DELAY 100  // Minimum delay between leds before dispense. Sensor sampling also delays.
+#define UNFILL_DELAY 50 // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
 
@@ -254,8 +254,9 @@ void loop()
             { // been empty long enough to allow new dispense event
                 not_dispensed = true;
                 //ledGreen();
+                engaged_nozzle = NULL; // Moved this up from below to try to fix LEDs not returning to red after disengage
             }
-            engaged_nozzle = NULL;
+            //engaged_nozzle = NULL;
             palette_clear = true;
             Serial.println("Palette gone");
             led_goal = SOLID_GREEN;
