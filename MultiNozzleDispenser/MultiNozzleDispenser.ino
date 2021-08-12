@@ -38,9 +38,11 @@ int count = 0; // Counter for serial monitor to show change between lines
 
 // LED Constants
 // #define LED_PIN 9
-#define LED_COUNT 8 // 8 LEDs per strand to neoPXL8 wing
-#define PIXEL_BRIGHTNESS 128
-#define FILL_DELAY 100  // Minimum delay between leds before dispense. Sensor sampling also delays.
+// #define LED_COUNT 8 // 8 LEDs per strand to neoPXL8 wing
+#define LED_STRAND_SIZE 8
+#define NUM_LED_STRANDS 5
+#define PIXEL_BRIGHTNESS 20
+#define FILL_DELAY 75  // Minimum delay between leds before dispense. Sensor sampling also delays.
 #define UNFILL_DELAY 50 // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
 #define SOLID_RED 2
@@ -50,9 +52,9 @@ int red_leader = -1;                      // Position of the lowest red LED.
 int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the current state.
 
 // Full Strip of NeoPixels, to be broken up
-// Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel strip(LED_STRAND_SIZE, LED_PIN, NEO_GRB + NEO_KHZ800);
 int8_t pins[8] = {PIN_SERIAL1_RX, PIN_SERIAL1_TX, 9, 6, 13, 12, 11, 10};
-Adafruit_NeoPXL8 strip(LED_COUNT, pins, NEO_RGBW);
+Adafruit_NeoPXL8 strip(LED_STRAND_SIZE, pins, NEO_RGBW);
 
 JrkG2I2C jrk0(11);                       // Pololu motor controller
 JrkG2I2C jrk1(12);                       // Pololu motor controller
@@ -75,7 +77,7 @@ bool not_dispensed = true;
 typedef struct
 {
     int pos;
-    uint16_t leds[8];
+    uint16_t leds[LED_STRAND_SIZE];
     JrkG2I2C jrk;
     int sensor_a; // position in 16 sensor sample arrays
     int sensor_b; // position in 16 sensor sample arrays
@@ -138,7 +140,12 @@ void setup()
     {
         Serial.println("LED strip FAILED to allocate memory and initialize pins.");
     }
-    ledGreen();
+    delay(100);
+    for (int i=0; i<(NUM_LED_STRANDS * LED_STRAND_SIZE); i++) // All pixels
+    {
+        strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0); // Set Red
+    }
+    strip.show();
 }
 
 // ██╗      ██████╗  ██████╗ ██████╗
@@ -172,7 +179,7 @@ void loop()
             prev_led_change_millis = millis();
         }
     }
-    else if ((led_goal == SOLID_RED) && red_leader < LED_COUNT)
+    else if ((led_goal == SOLID_RED) && red_leader < LED_STRAND_SIZE)
     { // if our goal is red, but we aren't fully red yet
         if ((millis() - prev_led_change_millis) > FILL_DELAY)
         {                 // if we have waited long enough since the last led change
@@ -228,7 +235,7 @@ void loop()
                 // {
                 //     Serial.println("post-dispense");
                 // }
-                if ((red_leader == LED_COUNT) && not_dispensed)
+                if ((red_leader == LED_STRAND_SIZE) && not_dispensed)
                 {
                     not_dispensed = false;
                     //ledRed();
@@ -422,7 +429,7 @@ void endDispense(JrkG2I2C jrk)
 
 void ledGreen()
 { // Light strip full green, no delays
-    for (int i = LED_COUNT; i >= 0; i--)
+    for (int i = LED_STRAND_SIZE; i >= 0; i--)
     {
         strip.setPixelColor(i, 0, PIXEL_BRIGHTNESS, 0);
         strip.show();
@@ -432,7 +439,7 @@ void ledGreen()
 // NOT COMPILING:
 // void nozzleLedGreen(uint16_t *leds[])
 // { // Light strip full green, no delays
-//     for (int i = LED_COUNT; i >= 0; i--)
+//     for (int i = LED_STRAND_SIZE; i >= 0; i--)
 //     {
 //         strip.setPixelColor(leds[i], 0, PIXEL_BRIGHTNESS, 0);
 //         strip.show();
@@ -441,7 +448,7 @@ void ledGreen()
 
 void ledRed()
 { // Light strip full red, no delays
-    for (int i = 0; i < LED_COUNT; i++)
+    for (int i = 0; i < LED_STRAND_SIZE; i++)
     {
         strip.setPixelColor(i, PIXEL_BRIGHTNESS, 0, 0);
         strip.show();
@@ -451,7 +458,7 @@ void ledRed()
 // NOT COMPILING
 // void nozzleLedRed(uint16_t *leds[])
 // { // Light strip full red, no delays
-//     for (int i = 0; i < LED_COUNT; i++)
+//     for (int i = 0; i < LED_STRAND_SIZE; i++)
 //     {
 //         strip.setPixelColor(leds[i], PIXEL_BRIGHTNESS, 0, 0);
 //         strip.show();
