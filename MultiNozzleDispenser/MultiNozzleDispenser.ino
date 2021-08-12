@@ -37,9 +37,9 @@ int count = 0; // Counter for serial monitor to show change between lines
 #define STOP_SPEED 2048
 
 // LED Constants
-#define LED_PIN 9
+// #define LED_PIN 9
 #define LED_COUNT 8         // 8 LEDs per strand to neoPXL8 wing
-#define PIXEL_BRIGHTNESS 10 // kept dim when powered by Feather's onboard 3.3v regulator
+#define PIXEL_BRIGHTNESS 128
 #define FILL_DELAY 100      // Minimum delay between leds before dispense. Sensor sampling also delays.
 #define UNFILL_DELAY 50     // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
@@ -52,7 +52,7 @@ int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the cu
 // Full Strip of NeoPixels, to be broken up
 // Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 int8_t pins[8] = {PIN_SERIAL1_RX, PIN_SERIAL1_TX, 9, 6, 13, 12, 11, 10};
-Adafruit_NeoPXL8 strip(LED_COUNT, pins, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPXL8 strip(LED_COUNT, pins, NEO_RGBW);
 
 JrkG2I2C jrk0(11);                       // Pololu motor controller
 JrkG2I2C jrk1(12);                       // Pololu motor controller
