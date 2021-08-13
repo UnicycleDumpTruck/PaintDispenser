@@ -14,7 +14,6 @@ samples.
 #include <Adafruit_SleepyDog.h>
 #include <Adafruit_MCP3008.h>
 #include <JrkG2.h>
-// #include <Adafruit_NeoPixel.h>
 #include <Adafruit_NeoPXL8.h>
 
 Adafruit_MCP3008 adc_a;
@@ -25,20 +24,12 @@ int current_sample = 0;
 
 int count = 0; // Counter for serial monitor to show change between lines
 
-// // Possible states for main loop:
-// #define IDLE 0
-// #define DETECTED 1
-// #define DISPENSING 2
-// int state = IDLE;
-
 // Motor Speeds
 #define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
 
 // LED Constants
-// #define LED_PIN 9
-// #define LED_COUNT 8 // 8 LEDs per strand to neoPXL8 wing
 #define LED_STRAND_SIZE 8
 #define NUM_LED_STRANDS 5
 #define PIXEL_BRIGHTNESS 20
@@ -51,8 +42,7 @@ unsigned long prev_led_change_millis = 0; // When the last LED change occurred.
 int red_leader = -1;                      // Position of the lowest red LED.
 int led_goal = SOLID_GREEN;               // Just a goal, not necessarily the current state.
 
-// Full Strip of NeoPixels, to be broken up
-// Adafruit_NeoPixel strip(LED_STRAND_SIZE, LED_PIN, NEO_GRB + NEO_KHZ800);
+// Five 8-pixel strands of NeoPixels, plugged into the NeoPXL8 FeatherWing
 int8_t pins[8] = {PIN_SERIAL1_RX, PIN_SERIAL1_TX, 9, 6, 13, 12, 11, 10};
 Adafruit_NeoPXL8 strip(LED_STRAND_SIZE, pins, NEO_RGBW);
 
@@ -317,15 +307,15 @@ void readSensors() // replace next set of samples with fresh read
   for (int chan = 0; chan < 8; chan++)
   {
     all_samples[current_sample][sample] = adc_a.readADC(chan);
-    // Serial.print(all_samples[current_sample][sample]);
-    // Serial.print("\t");
+    Serial.print(all_samples[current_sample][sample]);
+    Serial.print("\t");
     sample++;
   }
   for (int chan = 0; chan < 8; chan++)
   {
     all_samples[current_sample][sample] = adc_b.readADC(chan);
-    // Serial.print(all_samples[current_sample][sample]);
-    // Serial.print("\t");
+    Serial.print(all_samples[current_sample][sample]);
+    Serial.print("\t");
     sample++;
   }
   if (current_sample < NUMBER_OF_SAMPLES)
@@ -337,9 +327,9 @@ void readSensors() // replace next set of samples with fresh read
     current_sample = 0;
   }
 
-  // Serial.print("[");
-  // Serial.print(count);
-  // Serial.println("]");
+  Serial.print("[");
+  Serial.print(count);
+  Serial.println("]");
   count++;
 }
 
