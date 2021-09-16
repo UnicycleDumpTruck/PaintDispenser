@@ -33,7 +33,7 @@ int count = 0; // Counter for serial monitor to show change between lines
 
 #define PRIME_BUTTON_PIN A2
 #define DISPENSE_DURATION 1500
-#define PRIME_DURATION 4000 // Duration when prime button is held
+#define PRIME_DURATION 6000 // Duration when prime button is held
 unsigned long duration = DISPENSE_DURATION; // Default to not priming
 
 // Motor Speeds
@@ -168,7 +168,6 @@ void loop()
         duration = DISPENSE_DURATION;
     } else {
         duration = PRIME_DURATION;
-        Serial.println("Prime");
     }
     if (((millis() - dispense_begin_millis) > duration) && dispensing)
     {
