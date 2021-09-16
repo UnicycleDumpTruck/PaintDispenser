@@ -31,8 +31,12 @@ int count = 0; // Counter for serial monitor to show change between lines
 // #define DISPENSING 2
 // int state = IDLE;
 
+#define PRIME_BUTTON_PIN A2
+#define DISPENSE_DURATION 1500
+#define PRIME_DURATION 4000 // Duration when prime button is held
+unsigned long duration = DISPENSE_DURATION; // Default to not priming
+
 // Motor Speeds
-#define DISPENSE_DURATION 2000
 #define DISPENSE_SPEED 1448
 #define STOP_SPEED 2048
 
@@ -129,6 +133,8 @@ void setup()
     Serial.println("Watchdog enabled.");
     Wire.begin(); // Set up I2C.
 
+    pinMode(PRIME_BUTTON_PIN, INPUT_PULLUP);
+
     // Hardware SPI (specify CS, use any available digital)
     adc_a.begin(5);
     adc_b.begin(4);
@@ -158,7 +164,13 @@ void setup()
 void loop()
 {
     // End dispensing if DISPENSE_DURATION has elapsed:
-    if (((millis() - dispense_begin_millis) > DISPENSE_DURATION) && dispensing)
+    if (digitalRead(PRIME_BUTTON_PIN)) { 
+        duration = DISPENSE_DURATION;
+    } else {
+        duration = PRIME_DURATION;
+        Serial.println("Prime");
+    }
+    if (((millis() - dispense_begin_millis) > duration) && dispensing)
     {
         Serial.println("Dispense Duration elapsed, stopping pump");
         //delay(2000); // Hold it so we can see in the serial monitor
