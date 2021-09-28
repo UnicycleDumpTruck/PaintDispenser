@@ -32,12 +32,12 @@ int count = 0; // Counter for serial monitor to show change between lines
 // int state = IDLE;
 
 #define PRIME_BUTTON_PIN A2
-#define DISPENSE_DURATION 1500
+#define DISPENSE_DURATION 2000
 #define PRIME_DURATION 6000 // Duration when prime button is held
 unsigned long duration = DISPENSE_DURATION; // Default to not priming
 
 // Motor Speeds
-#define DISPENSE_SPEED 1448
+#define DISPENSE_SPEED 1000// was 1448
 #define STOP_SPEED 2048
 
 // LED Constants
@@ -45,7 +45,7 @@ unsigned long duration = DISPENSE_DURATION; // Default to not priming
 // #define LED_COUNT 8 // 8 LEDs per strand to neoPXL8 wing
 #define LED_STRAND_SIZE 8
 #define NUM_LED_STRANDS 5
-#define PIXEL_BRIGHTNESS 20
+#define PIXEL_BRIGHTNESS 128
 #define FILL_DELAY 40  // Minimum delay between leds before dispense. Sensor sampling also delays.
 #define UNFILL_DELAY 40 // Minimum delay between leds after dispense. Sensor sampling also delays.
 #define SOLID_GREEN 1
