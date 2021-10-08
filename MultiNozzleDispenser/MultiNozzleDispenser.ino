@@ -89,10 +89,10 @@ typedef struct
     int b_thresh;
 } nozzle;
 
-nozzle n0{0, {0, 1, 2, 3, 4, 5, 6, 7}, jrk0, 6, 7, 110, 115}; // Rightmost, from rear view
-nozzle n1{1, {8, 9, 10, 11, 12, 13, 14, 15}, jrk1, 8, 9, 110, 115};
-nozzle n2{2, {16, 17, 18, 19, 20, 21, 22, 23}, jrk2, 10, 11, 110, 120};
-nozzle n3{3, {24, 25, 26, 27, 28, 29, 30, 31}, jrk3, 12, 13, 125, 125};
+nozzle n0{0, {0, 1, 2, 3, 4, 5, 6, 7}, jrk0, 6, 7, 110, 120}; // Rightmost, from rear view
+nozzle n1{1, {8, 9, 10, 11, 12, 13, 14, 15}, jrk1, 8, 9, 110, 120};
+nozzle n2{2, {16, 17, 18, 19, 20, 21, 22, 23}, jrk2, 10, 11, 110, 125};
+nozzle n3{3, {24, 25, 26, 27, 28, 29, 30, 31}, jrk3, 12, 13, 125, 120};
 nozzle n4{4, {32, 33, 34, 35, 36, 37, 38, 39}, jrk4, 14, 15, 110, 130}; // Leftmost, from rear view
 
 nozzle nozzles[5] = {n0, n1, n2, n3, n4};
@@ -223,10 +223,10 @@ void loop()
                 Serial.print("============Detected and Engaged============== ");
                 Serial.print("Noz: ");
                 Serial.println(engaged_nozzle->pos);
-                Serial.print("A: ");
-                Serial.println(engaged_nozzle->sensor_a);
-                Serial.print("B: ");
-                Serial.println(engaged_nozzle->sensor_b);
+                // Serial.print("A: ");
+                // Serial.println(engaged_nozzle->sensor_a);
+                // Serial.print("B: ");
+                // Serial.println(engaged_nozzle->sensor_b);
                 break; // Don't check the other nozzles
             }
         }
@@ -380,6 +380,12 @@ bool detect(int sample_pos, int threshold)
 
     if (medianReading > threshold)
     {
+        Serial.print("Sensor: ");
+        Serial.println(sample_pos);
+        Serial.print("Reading: ");
+        Serial.println(medianReading);
+        Serial.print("Threshold: ");
+        Serial.println(threshold);
         return true;
     }
     return false;
