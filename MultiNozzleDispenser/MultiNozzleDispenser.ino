@@ -221,7 +221,12 @@ void loop()
             {
                 engaged_nozzle = &nozzles[nozzle];
                 Serial.print("============Detected and Engaged============== ");
+                Serial.print("Noz: ");
                 Serial.println(engaged_nozzle->pos);
+                Serial.print("A: ");
+                Serial.println(engaged_nozzle->sensor_a);
+                Serial.print("B: ");
+                Serial.println(engaged_nozzle->sensor_b);
                 break; // Don't check the other nozzles
             }
         }
